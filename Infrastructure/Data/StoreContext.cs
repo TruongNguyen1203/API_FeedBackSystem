@@ -1,9 +1,13 @@
+using System;
 using Core.Entities;
+using Core.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Infrastructure.Data
 {
-    public class StoreContext:IdentityDbContext<AppUser, Role, Guid>
+    public class StoreContext: IdentityDbContext<AppUser, Role, Guid>
     {
         public StoreContext(DbContextOptions<StoreContext> options) : base(options)
         {
@@ -11,6 +15,9 @@ namespace Infrastructure.Data
         }   
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Answer>()
+                .HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });   
             modelBuilder.Entity<Trainee_Comment>()
                 .HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });      
             modelBuilder.Entity<Trainee_Assignment>()
@@ -27,7 +34,9 @@ namespace Infrastructure.Data
                 .HasOne(pt => pt.Question)
                 .WithMany(t => t.Feedback_Questions)
                 .HasForeignKey(pt => pt.QuestionID);
-             modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID, sc.TraineeID }); 
+             modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID, sc.TraineeId }); 
+             modelBuilder.Entity<Answer>().HasKey(aw => new {aw.ClassID,aw.ModuleID,aw.TraineeID,aw.QuestionID});
+              modelBuilder.Entity<Assignment>().HasKey(aw => new {aw.ClassID,aw.ModuleID,aw.TrainerID});
         }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
@@ -39,5 +48,9 @@ namespace Infrastructure.Data
         public DbSet<TypeFeedback> TypeFeedbacks { get; set; }
           public DbSet<Class> Classes { get; set; }
         public DbSet<Trainee> Trainees { get; set; }
+        public DbSet<Answer> Answers { get; set; }
+        public DbSet<Assignment> Assignments { get; set; }
+        public DbSet<Enrollment> Enrollments {get; set;}
+        public DbSet<Feedback_Question> Feedback_Questions {get; set;}
     }
 }
