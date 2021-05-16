@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
@@ -13,5 +14,7 @@ namespace Core.Entities
         public bool IsDelete { get; set; }
         public int TypeFeedbackID { get; set; }
         public TypeFeedback TypeFeedback { get; set; }
+        public ICollection<Feedback_Question> Feedback_Questions { get; set; }
+        public ICollection<Module> Modules { get; set; }
     }
 }
