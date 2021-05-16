@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
@@ -8,5 +9,6 @@ namespace Core.Entities
         public int TopicID { get; set; }
         [MaxLength(255)]
         public string TopicName { get; set; }
+        public ICollection<Question> Questions { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
@@ -9,5 +10,6 @@ namespace Core.Entities
         [MaxLength(50)]
         public string TypeName { get; set; }
         public bool IsDelete { get; set; }
+        public ICollection<Feedback> MyProperty { get; set; }
     }
 }

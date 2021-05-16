@@ -8,25 +8,36 @@ namespace Infrastructure.Data
         public StoreContext(DbContextOptions<StoreContext> options) : base(options)
         {
             
-        }
+        }   
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Trainee_Comment>().HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });      
-            modelBuilder.Entity<Feedback_Question>().HasKey(fq => new { fq.FeedbackID,fq.QuestionID });      
-            modelBuilder.Entity<Trainee_Assignment>().HasKey(ta => new { ta.RegistrationCode,ta.TraineeID }); 
-            modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID, sc.TraineeID });     
+            modelBuilder.Entity<Trainee_Comment>()
+                .HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });      
+            modelBuilder.Entity<Trainee_Assignment>()
+                .HasKey(ta => new { ta.RegistrationCode,ta.TraineeID }); 
+            // config many-to-many 
+            modelBuilder.Entity<Feedback_Question>()
+                .HasKey(fq=>new{fq.FeedbackID,fq.QuestionID});
+            modelBuilder.Entity<Feedback_Question>()
+                .HasOne(pt => pt.Feedback)
+                .WithMany(p => p.Feedback_Questions)
+                .HasForeignKey(pt => pt.FeedbackID);
+
+            modelBuilder.Entity<Feedback_Question>()
+                .HasOne(pt => pt.Question)
+                .WithMany(t => t.Feedback_Questions)
+                .HasForeignKey(pt => pt.QuestionID);
+             modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID, sc.TraineeID }); 
         }
-        public DbSet<Admin> Admin { get; set; }
-        public DbSet<Feedback_Question> Feedback_Question { get; set; }
-        public DbSet<Feedback> Feedback { get; set; }
-        public DbSet<Module> Module { get; set; }
-        public DbSet<Topic> Topic { get; set; }
-        public DbSet<Trainee_Assignment> Trainee_Assignment { get; set; }
-        public DbSet<Trainee_Comment> Trainee_Comment { get; set; }
-        public DbSet<TypeFeedback> TypeFeedback { get; set; }
-        public DbSet<Topic> Topic { get; set; }
-        public DbSet<Class> Classes { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<Module> Modules { get; set; }
+        public DbSet<Topic> Topics { get; set; }
+        public DbSet<Trainee_Assignment> Trainee_Assignments { get; set; }
+        public DbSet<Trainee_Comment> Trainee_Comments { get; set; }
+        public DbSet<TypeFeedback> TypeFeedbacks { get; set; }
+          public DbSet<Class> Classes { get; set; }
         public DbSet<Trainee> Trainees { get; set; }
     }
 }
