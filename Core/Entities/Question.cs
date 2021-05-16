@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Core.Entities
 {
     public class Question
@@ -6,5 +8,6 @@ namespace Core.Entities
         public int TopicID {get; set;}
         public string QuestionContent {get; set;}
         public bool IsDeleted {get; set;}
+         public ICollection<Answer> Answers { get; set; }
     }
 }

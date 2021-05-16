@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
@@ -18,5 +19,9 @@ namespace Core.Entities
         public DateTime FeedbackEndTime { get; set; }
         public int FeedbackID { get; set; }
         public Feedback Feedback { get; set; }
+
+         public ICollection<Assignment> Assignments { get; set; }
+         public ICollection<Answer> Answers { get; set; }
+         
     }
 }

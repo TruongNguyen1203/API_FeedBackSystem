@@ -9,5 +9,6 @@ namespace Core.Entities
         public int FeedbackID { get; set; }
         public Feedback Feedback { get; set; }
         public int QuestionID { get; set; }
+         public Question Question { get; set; }
     }
 }

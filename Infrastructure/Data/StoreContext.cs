@@ -13,7 +13,8 @@ namespace Infrastructure.Data
         {
             modelBuilder.Entity<Trainee_Comment>().HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });      
             modelBuilder.Entity<Feedback_Question>().HasKey(fq => new { fq.FeedbackID,fq.QuestionID });      
-            modelBuilder.Entity<Trainee_Assignment>().HasKey(ta => new { ta.RegistrationCode,ta.TraineeID });      
+            modelBuilder.Entity<Trainee_Assignment>().HasKey(ta => new { ta.RegistrationCode,ta.TraineeID }); 
+            modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID, sc.TraineeID });     
         }
         public DbSet<Admin> Admin { get; set; }
         public DbSet<Feedback_Question> Feedback_Question { get; set; }
@@ -23,5 +24,8 @@ namespace Infrastructure.Data
         public DbSet<Trainee_Assignment> Trainee_Assignment { get; set; }
         public DbSet<Trainee_Comment> Trainee_Comment { get; set; }
         public DbSet<TypeFeedback> TypeFeedback { get; set; }
+        public DbSet<Topic> Topic { get; set; }
+        public DbSet<Class> Classes { get; set; }
+        public DbSet<Trainee> Trainees { get; set; }
     }
 }
