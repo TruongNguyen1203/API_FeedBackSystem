@@ -1,18 +1,14 @@
-
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Core.Entities.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace Core.Entities
 {
-    public class Admin
+    public class Admin : AppUser
     {
-        [Key]
-        [MaxLength(50)]
-        public string UserName { get; set; }
-        [MaxLength(255)]
-        public string Name { get; set; }
-        [MaxLength(50)]
-        public string Email { get; set; }
-        [MaxLength(255)]
-        public string Password { get; set; }
+      
+        public virtual ICollection<Module> Modules { get; set; }
+        public virtual ICollection<Feedback> Feedbacks { get; set; }
     }
 }

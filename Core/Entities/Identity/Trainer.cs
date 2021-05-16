@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Core.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
 
 namespace Core.Entities
 {
-    public class Trainer : IdentityUser<Guid>
+    public class Trainer : AppUser
     {
-         public string Name { get; set; }
          public string Address { get; set; }
          public bool IsActive { get; set; } 
          public int IdSkill { get; set; }

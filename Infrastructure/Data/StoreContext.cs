@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data
 {
-    public class StoreContext:DbContext
+    public class StoreContext:IdentityDbContext<AppUser, Role, Guid>
     {
         public StoreContext(DbContextOptions<StoreContext> options) : base(options)
         {
@@ -11,6 +11,7 @@ namespace Infrastructure.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Trainee_Comment>().HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });      
             modelBuilder.Entity<Feedback_Question>().HasKey(fq => new { fq.FeedbackID,fq.QuestionID });      
             modelBuilder.Entity<Trainee_Assignment>().HasKey(ta => new { ta.RegistrationCode,ta.TraineeID }); 
