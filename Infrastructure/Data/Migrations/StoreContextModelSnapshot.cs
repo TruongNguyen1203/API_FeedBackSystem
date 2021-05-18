@@ -19,6 +19,23 @@ namespace Infrastructure.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("Core.Entities.Admin", b =>
+                {
+                    b.Property<int>("AdminID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AdminID");
+
+                    b.HasIndex("AppUserId");
+
+                    b.ToTable("Admins");
+                });
+
             modelBuilder.Entity("Core.Entities.Answer", b =>
                 {
                     b.Property<int>("ClassID")
@@ -33,9 +50,6 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("QuestionID")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("TraineeId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Value")
                         .HasColumnType("int");
 
@@ -45,7 +59,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("QuestionID");
 
-                    b.HasIndex("TraineeId");
+                    b.HasIndex("TraineeID");
 
                     b.ToTable("Answers");
                 });
@@ -61,14 +75,11 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("TrainerID")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("TrainerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("ClassID", "ModuleID", "TrainerID");
 
                     b.HasIndex("ModuleID");
 
-                    b.HasIndex("TrainerId");
+                    b.HasIndex("TrainerID");
 
                     b.ToTable("Assignments");
                 });
@@ -108,12 +119,9 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("TraineeID")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("TraineeId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("ClassID", "TraineeID");
 
-                    b.HasIndex("TraineeId");
+                    b.HasIndex("TraineeID");
 
                     b.ToTable("Enrollments");
                 });
@@ -128,9 +136,6 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("AdminID")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("AdminId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
 
@@ -143,7 +148,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("FeedbackID");
 
-                    b.HasIndex("AdminId");
+                    b.HasIndex("AdminID");
 
                     b.HasIndex("TypeFeedbackID");
 
@@ -176,10 +181,6 @@ namespace Infrastructure.Data.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -237,8 +238,6 @@ namespace Infrastructure.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("AppUser");
                 });
 
             modelBuilder.Entity("Core.Entities.Identity.Role", b =>
@@ -279,9 +278,6 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("AdminID")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("AdminId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
 
@@ -306,7 +302,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasKey("ModuleID");
 
-                    b.HasIndex("AdminId");
+                    b.HasIndex("AdminID");
 
                     b.HasIndex("FeedbackID");
 
@@ -352,6 +348,32 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("Topics");
                 });
 
+            modelBuilder.Entity("Core.Entities.Trainee", b =>
+                {
+                    b.Property<int>("TraineeID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActivationCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ResetPasswordCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TraineeID");
+
+                    b.HasIndex("AppUserId");
+
+                    b.ToTable("Trainees");
+                });
+
             modelBuilder.Entity("Core.Entities.Trainee_Assignment", b =>
                 {
                     b.Property<string>("RegistrationCode")
@@ -386,6 +408,41 @@ namespace Infrastructure.Data.Migrations
                     b.HasKey("ClassID", "ModuleID", "TraineeID");
 
                     b.ToTable("Trainee_Comments");
+                });
+
+            modelBuilder.Entity("Core.Entities.Trainer", b =>
+                {
+                    b.Property<int>("TrainerID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ActivationCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("IdSkill")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReceiveNotification")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ResetPasswordCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("TrainerID");
+
+                    b.HasIndex("AppUserId");
+
+                    b.ToTable("Trainer");
                 });
 
             modelBuilder.Entity("Core.Entities.TypeFeedback", b =>
@@ -510,53 +567,9 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Core.Entities.Admin", b =>
                 {
-                    b.HasBaseType("Core.Entities.Identity.AppUser");
-
-                    b.HasDiscriminator().HasValue("Admin");
-                });
-
-            modelBuilder.Entity("Core.Entities.Trainee", b =>
-                {
-                    b.HasBaseType("Core.Entities.Identity.AppUser");
-
-                    b.Property<string>("ActivationCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ResetPasswordCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("Trainee");
-                });
-
-            modelBuilder.Entity("Core.Entities.Trainer", b =>
-                {
-                    b.HasBaseType("Core.Entities.Identity.AppUser");
-
-                    b.Property<string>("ActivationCode")
-                        .HasColumnName("Trainer_ActivationCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("IdSkill")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnName("Trainer_IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsReceiveNotification")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ResetPasswordCode")
-                        .HasColumnName("Trainer_ResetPasswordCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasDiscriminator().HasValue("Trainer");
+                    b.HasOne("Core.Entities.Identity.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId");
                 });
 
             modelBuilder.Entity("Core.Entities.Answer", b =>
@@ -581,7 +594,9 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasOne("Core.Entities.Trainee", "Trainee")
                         .WithMany("Answers")
-                        .HasForeignKey("TraineeId");
+                        .HasForeignKey("TraineeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Core.Entities.Assignment", b =>
@@ -600,27 +615,33 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasOne("Core.Entities.Trainer", "Trainer")
                         .WithMany("Assignments")
-                        .HasForeignKey("TrainerId");
+                        .HasForeignKey("TrainerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Core.Entities.Enrollment", b =>
                 {
                     b.HasOne("Core.Entities.Class", "Class")
-                        .WithMany("Enrollment")
+                        .WithMany("Enrollments")
                         .HasForeignKey("ClassID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Core.Entities.Trainee", "Trainee")
-                        .WithMany("Enrollment")
-                        .HasForeignKey("TraineeId");
+                        .WithMany()
+                        .HasForeignKey("TraineeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Core.Entities.Feedback", b =>
                 {
                     b.HasOne("Core.Entities.Admin", "Admin")
                         .WithMany("Feedbacks")
-                        .HasForeignKey("AdminId");
+                        .HasForeignKey("AdminID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Core.Entities.TypeFeedback", "TypeFeedback")
                         .WithMany("MyProperty")
@@ -648,12 +669,14 @@ namespace Infrastructure.Data.Migrations
                 {
                     b.HasOne("Core.Entities.Admin", "Admin")
                         .WithMany("Modules")
-                        .HasForeignKey("AdminId");
+                        .HasForeignKey("AdminID")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired();
 
                     b.HasOne("Core.Entities.Feedback", "Feedback")
                         .WithMany("Modules")
                         .HasForeignKey("FeedbackID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
                 });
 
@@ -664,6 +687,20 @@ namespace Infrastructure.Data.Migrations
                         .HasForeignKey("TopicID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Core.Entities.Trainee", b =>
+                {
+                    b.HasOne("Core.Entities.Identity.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId");
+                });
+
+            modelBuilder.Entity("Core.Entities.Trainer", b =>
+                {
+                    b.HasOne("Core.Entities.Identity.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

@@ -11,7 +11,7 @@ namespace Core.Entities
         public int AdminID { get; set; }
         public Admin Admin { get; set; }
         [MaxLength(50)]       
-         public string ModuleName { get; set; }
+        public string ModuleName { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public bool IsDelete { get; set; }
@@ -19,9 +19,7 @@ namespace Core.Entities
         public DateTime FeedbackEndTime { get; set; }
         public int FeedbackID { get; set; }
         public Feedback Feedback { get; set; }
-
-         public ICollection<Assignment> Assignments { get; set; }
-         public ICollection<Answer> Answers { get; set; }
-         
+        public ICollection<Assignment> Assignments { get; set; }
+        public ICollection<Answer> Answers { get; set; }  
     }
 }

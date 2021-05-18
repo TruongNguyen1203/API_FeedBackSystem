@@ -22,6 +22,17 @@ namespace Infrastructure.Data
                 .HasKey(tm => new { tm.ClassID,tm.ModuleID,tm.TraineeID });      
             modelBuilder.Entity<Trainee_Assignment>()
                 .HasKey(ta => new { ta.RegistrationCode,ta.TraineeID }); 
+            modelBuilder.Entity<Module>()
+                .HasKey(tm => new { tm.ModuleID });
+             modelBuilder.Entity<Module>()
+                .HasOne(pt => pt.Feedback)
+                .WithMany(p => p.Modules)
+                .HasForeignKey(pt => pt.FeedbackID)
+                .OnDelete(DeleteBehavior.ClientCascade);
+            modelBuilder.Entity<Module>()
+                .HasOne(pt => pt.Admin)
+                .WithMany(p => p.Modules)
+                .OnDelete(DeleteBehavior.ClientCascade);
             // config many-to-many 
             modelBuilder.Entity<Feedback_Question>()
                 .HasKey(fq=>new{fq.FeedbackID,fq.QuestionID});
@@ -34,7 +45,8 @@ namespace Infrastructure.Data
                 .HasOne(pt => pt.Question)
                 .WithMany(t => t.Feedback_Questions)
                 .HasForeignKey(pt => pt.QuestionID);
-             modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID, sc.TraineeId }); 
+             modelBuilder.Entity<Enrollment>().HasKey(sc => new { sc.ClassID,sc.TraineeID}); 
+           
              modelBuilder.Entity<Answer>().HasKey(aw => new {aw.ClassID,aw.ModuleID,aw.TraineeID,aw.QuestionID});
               modelBuilder.Entity<Assignment>().HasKey(aw => new {aw.ClassID,aw.ModuleID,aw.TrainerID});
         }
@@ -46,7 +58,7 @@ namespace Infrastructure.Data
         public DbSet<Trainee_Assignment> Trainee_Assignments { get; set; }
         public DbSet<Trainee_Comment> Trainee_Comments { get; set; }
         public DbSet<TypeFeedback> TypeFeedbacks { get; set; }
-          public DbSet<Class> Classes { get; set; }
+        public DbSet<Class> Classes { get; set; }
         public DbSet<Trainee> Trainees { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<Assignment> Assignments { get; set; }

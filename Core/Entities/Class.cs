@@ -16,7 +16,7 @@ namespace Core.Entities
 
         public ICollection<Assignment> Assignments { get; set; }
          public ICollection<Answer> Answers { get; set; }
-         public ICollection<Enrollment> Enrollment { get; set; }
+         public ICollection<Enrollment> Enrollments { get; set; }
 
     }
 }
