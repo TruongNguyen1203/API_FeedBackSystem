@@ -4,8 +4,9 @@ using Core.Entities;
 
 namespace Core.Interfaces
 {
-    public interface IClassRepository 
+    public interface IClassRepository : IRepository<Class>
     {
+        void Update(Class @class);
         // Task<Class> GetClassByIdAsync(int id);
         // Task<IReadOnlyList<Class>> GetClassesAsync();
         // Task<IReadOnlyList<Assignment>> GetAssignmentsAsync();

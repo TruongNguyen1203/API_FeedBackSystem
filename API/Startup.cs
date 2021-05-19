@@ -31,7 +31,7 @@ namespace API
             services.AddControllers();
             var connection = _config.GetConnectionString("DefaultConnection");
             services.AddDbContext<StoreContext>(options => options.UseSqlServer(connection));
-             services.AddScoped<IClassRepository, ClassRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
