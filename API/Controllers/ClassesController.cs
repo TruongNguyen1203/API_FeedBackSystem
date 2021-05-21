@@ -81,28 +81,28 @@ namespace API.Controllers
         }
 
         //Delete a class
-         [HttpDelete("{id:int}")]
-    public ActionResult<Class> DeleteClass(int id)
-    {
-        try
+        [HttpDelete("{id:int}")]
+        public ActionResult<Class> DeleteClass(int id)
         {
-           var classToDelete = _context.Classes.AsNoTracking().FirstOrDefault(x => x.ClassID == id);
-
-            if (classToDelete == null)
+            try
             {
-                return NotFound($"Class with Id = {id} not found");
-            }
+                var classToDelete = _context.Classes.AsNoTracking().FirstOrDefault(x => x.ClassID == id);
 
-            _unitOfWork.Class.Remove(classToDelete);
-            _unitOfWork.Save();
-            return NoContent();
+                if (classToDelete == null)
+                {
+                    return NotFound($"Class with Id = {id} not found");
+                }
+
+                _unitOfWork.Class.Remove(classToDelete);
+                _unitOfWork.Save();
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error deleting data");
+            }
         }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                "Error deleting data");
-        }
-    }
 
     }
 }
