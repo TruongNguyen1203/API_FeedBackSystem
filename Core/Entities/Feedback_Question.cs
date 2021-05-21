@@ -7,8 +7,8 @@ namespace Core.Entities
     public class Feedback_Question
     {
         public int FeedbackID { get; set; }
-        public Feedback Feedback { get; set; }
+        public virtual Feedback Feedback { get; set; }
         public int QuestionID { get; set; }
-         public Question Question { get; set; }
+         public virtual Question Question { get; set; }
     }
 }

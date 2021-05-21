@@ -8,6 +8,10 @@ namespace Core.Entities
 {
     public class Trainer
     {
+         public Trainer()
+        {
+            this.Assignments = new HashSet<Assignment>();
+        }
         [Key]
         public int TrainerID { get; set; }
         public AppUser AppUser { get; set; }
@@ -17,7 +21,7 @@ namespace Core.Entities
          public string ActivationCode { get; set; }
          public string ResetPasswordCode { get; set; }
          public bool IsReceiveNotification { get; set; }
-          public ICollection<Assignment> Assignments { get; set; }
+          public virtual ICollection<Assignment> Assignments { get; set; }
 
     }
 }

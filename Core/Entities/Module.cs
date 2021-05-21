@@ -6,10 +6,15 @@ namespace Core.Entities
 {
     public class Module
     {
+         public Module()
+        {
+            this.Assignments = new HashSet<Assignment>();
+            this.Answers = new HashSet<Answer>();
+        }
         [Key]
         public int ModuleID { get; set; }
         public int AdminID { get; set; }
-        public Admin Admin { get; set; }
+        public virtual Admin Admin { get; set; }
         [MaxLength(50)]       
         public string ModuleName { get; set; }
         public DateTime StartTime { get; set; }
@@ -18,8 +23,8 @@ namespace Core.Entities
         public DateTime FeedbackStartTime { get; set; }
         public DateTime FeedbackEndTime { get; set; }
         public int FeedbackID { get; set; }
-        public Feedback Feedback { get; set; }
-        public ICollection<Assignment> Assignments { get; set; }
-        public ICollection<Answer> Answers { get; set; }  
+        public virtual Feedback Feedback { get; set; }
+        public virtual ICollection<Assignment> Assignments { get; set; }
+        public virtual ICollection<Answer> Answers { get; set; }  
     }
 }

@@ -8,6 +8,11 @@ namespace Core.Entities
 {
     public class Trainee 
     {
+         public Trainee()
+        {
+            this.Enrollments = new HashSet<Enrollment>();
+            this.Answers = new HashSet<Answer>();
+        }
         [Key]
         public int TraineeID { get; set; }
         public AppUser AppUser { get; set; }
@@ -16,7 +21,7 @@ namespace Core.Entities
         public string ResetPasswordCode { get; set; }
         
         public ICollection<Answer> Answers { get; set; }
-        // public ICollection<Enrollment> Enrollments { get; set; }
+        public ICollection<Enrollment> Enrollments { get; set; }
          
     }
 }

@@ -11,8 +11,11 @@ namespace Infrastructure.Data
         {
             _db = db;
             Class = new ClassRepository(_db);
+            Enrollment = new EnrollmentRepository(_db);
         }
          public IClassRepository Class { get; private set; }
+
+        public IEnrollmentRepository Enrollment { get; private set; }
 
         public void Dispose()
         {

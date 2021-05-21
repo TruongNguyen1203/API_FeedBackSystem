@@ -5,10 +5,10 @@ namespace Core.Entities
     public class Enrollment
     {
         public int ClassID {get; set;}
-        public Class Class {get; set;}
+        public virtual  Class Class {get; set;}
         public int TraineeID {get; set;}
 
-        public Trainee Trainee {get; set;}
+        public virtual Trainee Trainee {get; set;}
         
 
     }

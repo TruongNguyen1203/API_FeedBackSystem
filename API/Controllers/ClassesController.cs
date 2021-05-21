@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Entities;
+using Core.Entities.Identity;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Controllers
 {
     [ApiController]
+
     [Route("api/[controller]")]
     public class ClassesController : ControllerBase
     {
@@ -25,8 +28,10 @@ namespace API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = Role.Admin)]
         public IActionResult GetAll()
         {
+        
             var classes = _unitOfWork.Class.GetAll(includeProperties: "Assignments,Answers,Enrollments");
             //var classes = _unitOfWork.Class.GetAll();
             return Ok(classes);
@@ -43,6 +48,7 @@ namespace API.Controllers
         }
 
         //Add new class
+        [Authorize(Roles = Role.Admin)]
         [HttpPost]
         public ActionResult<Class> CreateClass(Class @class)
         {
@@ -63,6 +69,7 @@ namespace API.Controllers
             }
         }
 
+        [Authorize(Roles = Role.Admin)]
         [HttpPut("{id}")]
         public IActionResult UpdateClass(int id, Class @class)
         {
@@ -81,6 +88,7 @@ namespace API.Controllers
         }
 
         //Delete a class
+        [Authorize(Roles = Role.Admin)]
         [HttpDelete("{id:int}")]
         public ActionResult<Class> DeleteClass(int id)
         {

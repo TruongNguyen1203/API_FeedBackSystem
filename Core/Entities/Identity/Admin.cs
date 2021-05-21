@@ -7,6 +7,11 @@ namespace Core.Entities
 {
     public class Admin 
     {
+        public Admin()
+        {
+            this.Modules = new HashSet<Module>();
+            this.Feedbacks = new HashSet<Feedback>();
+        }
         [Key]
         public int AdminID { get; set; }
         public AppUser AppUser { get; set; }

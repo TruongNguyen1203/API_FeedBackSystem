@@ -5,6 +5,10 @@ namespace Core.Entities
 {
     public class Topic
     {
+        public Topic()
+        {
+            this.Questions = new HashSet<Question>();
+        }
         [Key]
         public int TopicID { get; set; }
         [MaxLength(255)]
