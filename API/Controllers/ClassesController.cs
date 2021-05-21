@@ -41,7 +41,6 @@ namespace API.Controllers
         public ActionResult<Class> GetClass(int id)
         {
             var @class = _unitOfWork.Class.GetFirstOrDefault(x => x.ClassID == id, includeProperties: "Assignments,Answers,Enrollments");
-            //var @class = _unitOfWork.Class.Get(id);
             if (@class == null)
                 return NotFound();
             return Ok(@class);

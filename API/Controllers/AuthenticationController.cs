@@ -87,6 +87,7 @@ namespace API.Controllers
                     Trainee trainee = new Trainee()
                     {
                         AppUser = user
+                        
                     };     
                     _context.Add(trainee);
                     break;
