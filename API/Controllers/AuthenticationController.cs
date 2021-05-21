@@ -5,7 +5,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.Dtos;
+using Core.Entities;
 using Core.Entities.Identity;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,15 +22,17 @@ namespace API.Controllers
     {
         private readonly UserManager<AppUser> userManager;
         private readonly RoleManager<Role> roleManager;
+        private readonly StoreContext _context;
         private readonly IConfiguration _configuration;
 
-        public AuthenticationController(UserManager<AppUser> userManager, 
-                                RoleManager<Role> roleManager, 
-                                IConfiguration configuration)
+        public AuthenticationController(UserManager<AppUser> userManager,
+                                RoleManager<Role> roleManager,
+                                IConfiguration configuration, StoreContext context)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpPost]
@@ -50,7 +54,12 @@ namespace API.Controllers
             var result= await userManager.CreateAsync(user,model.Password);
             if(!result.Succeeded)
             {
-                return Ok( new {status="error"});
+                string mes="";
+                foreach(var error in  result.Errors)
+                {
+                    mes+=error.Description+"\n";
+                }
+                return Ok( new {status="error", message=mes});
             }
             if(!await roleManager.RoleExistsAsync(Role.Admin))
                 await roleManager.CreateAsync( new Role("Admin"));
@@ -60,10 +69,46 @@ namespace API.Controllers
                 await roleManager.CreateAsync( new Role("Trainer"));
             if(model.Role!= Role.Admin && model.Role!=Role.Trainee&& model.Role!=Role.Trainer)
             {
-                return Ok(new {status="Fail",message="Role incorrect"});
+                return Ok(new {status="Fail",message="Role is incorrect"});
             }
-            await  userManager.AddToRoleAsync(user,model.Role);
-            return Ok(new {status="Success",message="User created successfully"});
+            // add to admin, trainee, trainer table
+            switch(model.Role)
+            {
+                case Role.Admin:
+                
+                    Admin admin= new Admin()
+                    {
+                        AppUser=user
+                    };
+
+                    _context.Add(admin);
+                    break;
+                case Role.Trainee:
+                    Trainee trainee = new Trainee()
+                    {
+                        AppUser = user
+                    };     
+                    _context.Add(trainee);
+                    break;
+                case Role.Trainer:
+                    Trainer trainer= new Trainer()
+                    {
+                        AppUser=user
+                    };
+                    _context.Add(trainer);
+                    break;
+            }
+            result=await userManager.AddToRoleAsync(user,model.Role);
+            if(!result.Succeeded)
+            {
+                string mes="";
+                foreach(var error in  result.Errors)
+                {
+                    mes+=error.Description+"\n";
+                }
+                return Ok( new {status="error", message=mes});
+            }
+            return Ok(new {status="Success",message="User created successfully and add to it's table"});
         }
         [HttpPost]
         [Route("login")]
