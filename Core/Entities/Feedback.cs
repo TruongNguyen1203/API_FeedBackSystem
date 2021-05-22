@@ -14,7 +14,7 @@ namespace Core.Entities
         public int FeedbackID { get; set; }
         [MaxLength(255)]
         public string Title { get; set; }
-        public int AdminID { get; set; }
+        public string AdminID { get; set; }
         public virtual Admin Admin { get; set; }
         public bool IsDelete { get; set; }
         public int TypeFeedbackID { get; set; }

@@ -13,7 +13,7 @@ namespace Core.Entities
             this.Feedbacks = new HashSet<Feedback>();
         }
         [Key]
-        public int AdminID { get; set; }
+        public string AdminID { get; set; }
         public AppUser AppUser { get; set; }
 
         public virtual ICollection<Module> Modules { get; set; }

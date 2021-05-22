@@ -6,7 +6,7 @@ namespace Core.Entities
     {
         public int ClassID {get; set;}
         public virtual  Class Class {get; set;}
-        public int TraineeID {get; set;}
+        public string TraineeID {get; set;}
 
         public virtual Trainee Trainee {get; set;}
         

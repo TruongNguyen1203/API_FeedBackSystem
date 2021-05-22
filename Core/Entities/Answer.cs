@@ -13,7 +13,7 @@ namespace Core.Entities
         public virtual Module Module {get; set;}
        
 
-        public int TraineeID {get; set;}
+        public string TraineeID {get; set;}
         public virtual Trainee Trainee {get; set;}
         
         public int QuestionID {get; set;}

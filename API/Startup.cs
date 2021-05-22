@@ -61,6 +61,9 @@ namespace API
                         .AddNewtonsoftJson(options =>
                         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
                     );
+            services.AddHttpContextAccessor();
+            services.AddDistributedMemoryCache();
+            services.AddSession();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -70,7 +73,7 @@ namespace API
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            app.UseSession(); 
             app.UseHttpsRedirection();
 
             app.UseRouting();
