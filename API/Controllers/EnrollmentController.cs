@@ -39,7 +39,7 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Enrollment>> UpdateEnrollment(int classId, int traineeId, Enrollment enrollment)
+        public async Task<ActionResult<Enrollment>> UpdateEnrollment(int classId, string traineeId, Enrollment enrollment)
         {
             try
             {
@@ -60,8 +60,8 @@ namespace API.Controllers
             }
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<Enrollment>> DeleteEnrollment(int classId, int traineeId)
+        [HttpDelete]        // duoc roi, nha dang on
+        public async Task<ActionResult<Enrollment>> DeleteEnrollment(int classId, string traineeId)
         {
             try
             {

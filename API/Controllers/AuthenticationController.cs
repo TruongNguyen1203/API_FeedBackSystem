@@ -164,9 +164,21 @@ namespace API.Controllers
                     signingCredentials: new SigningCredentials(authSigninKey,SecurityAlgorithms.HmacSha256)
                 );
                 var userId=user.UserName.ToString();
-                HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
+                // set session
 
-                
+                switch(model.Role)
+                {
+                    case "Admin":
+                         HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
+                         break;
+                    case "Trainee":
+                         HttpContext.Session.SetString(SessionKey.TraineeID,user.Id.ToString());
+                         break;
+                    case "Trainer":
+                         HttpContext.Session.SetString(SessionKey.TrainerID,user.Id.ToString());
+                         break;
+                }
+
                 return Ok(new
                 {
                     userId=userId,
