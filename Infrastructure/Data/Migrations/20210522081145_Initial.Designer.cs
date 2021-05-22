@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    [Migration("20210521074843_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20210522081145_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,10 +23,8 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Core.Entities.Admin", b =>
                 {
-                    b.Property<int>("AdminID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("AdminID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<Guid?>("AppUserId")
                         .HasColumnType("uniqueidentifier");
@@ -46,8 +44,8 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("ModuleID")
                         .HasColumnType("int");
 
-                    b.Property<int>("TraineeID")
-                        .HasColumnType("int");
+                    b.Property<string>("TraineeID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("QuestionID")
                         .HasColumnType("int");
@@ -74,8 +72,8 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("ModuleID")
                         .HasColumnType("int");
 
-                    b.Property<int>("TrainerID")
-                        .HasColumnType("int");
+                    b.Property<string>("TrainerID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ClassID", "ModuleID", "TrainerID");
 
@@ -118,8 +116,8 @@ namespace Infrastructure.Data.Migrations
                     b.Property<int>("ClassID")
                         .HasColumnType("int");
 
-                    b.Property<int>("TraineeID")
-                        .HasColumnType("int");
+                    b.Property<string>("TraineeID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("ClassID", "TraineeID");
 
@@ -135,8 +133,8 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("AdminID")
-                        .HasColumnType("int");
+                    b.Property<string>("AdminID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
@@ -277,8 +275,8 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("AdminID")
-                        .HasColumnType("int");
+                    b.Property<string>("AdminID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
@@ -352,10 +350,8 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Core.Entities.Trainee", b =>
                 {
-                    b.Property<int>("TraineeID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("TraineeID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ActivationCode")
                         .HasColumnType("nvarchar(max)");
@@ -414,10 +410,8 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Core.Entities.Trainer", b =>
                 {
-                    b.Property<int>("TrainerID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("TrainerID")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ActivationCode")
                         .HasColumnType("nvarchar(max)");
@@ -444,7 +438,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.ToTable("Trainer");
+                    b.ToTable("Trainers");
                 });
 
             modelBuilder.Entity("Core.Entities.TypeFeedback", b =>
@@ -641,9 +635,7 @@ namespace Infrastructure.Data.Migrations
                 {
                     b.HasOne("Core.Entities.Admin", "Admin")
                         .WithMany("Feedbacks")
-                        .HasForeignKey("AdminID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AdminID");
 
                     b.HasOne("Core.Entities.TypeFeedback", "TypeFeedback")
                         .WithMany("Feedbacks")
@@ -671,14 +663,12 @@ namespace Infrastructure.Data.Migrations
                 {
                     b.HasOne("Core.Entities.Admin", "Admin")
                         .WithMany("Modules")
-                        .HasForeignKey("AdminID")
-                        .OnDelete(DeleteBehavior.ClientCascade)
-                        .IsRequired();
+                        .HasForeignKey("AdminID");
 
                     b.HasOne("Core.Entities.Feedback", "Feedback")
                         .WithMany("Modules")
                         .HasForeignKey("FeedbackID")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

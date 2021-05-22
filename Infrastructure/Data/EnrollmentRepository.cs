@@ -22,7 +22,7 @@ namespace Infrastructure.Data
             return result.Entity;
         }
 
-        public async Task<Enrollment> DeleteEnrollment(int classId, int traineeId)
+        public async Task<Enrollment> DeleteEnrollment(int classId, string traineeId)
         {
             var result = await _context.Enrollments
                 .FirstOrDefaultAsync(e => e.ClassID == classId && e.TraineeID == traineeId);
@@ -36,7 +36,7 @@ namespace Infrastructure.Data
              return null;
         }
 
-        public async Task<Enrollment> GetEnrollment(int classId, int traineeId)
+        public async Task<Enrollment> GetEnrollment(int classId, string traineeId)
         {
            return await _context.Enrollments.FirstOrDefaultAsync(c => c.ClassID == classId && c.TraineeID == traineeId);
         }

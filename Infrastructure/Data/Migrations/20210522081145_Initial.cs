@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Infrastructure.Data.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -142,8 +142,7 @@ namespace Infrastructure.Data.Migrations
                 name: "Admins",
                 columns: table => new
                 {
-                    AdminID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AdminID = table.Column<string>(nullable: false),
                     AppUserId = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>
@@ -246,8 +245,7 @@ namespace Infrastructure.Data.Migrations
                 name: "Trainees",
                 columns: table => new
                 {
-                    TraineeID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TraineeID = table.Column<string>(nullable: false),
                     AppUserId = table.Column<Guid>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
                     ActivationCode = table.Column<string>(nullable: true),
@@ -265,11 +263,10 @@ namespace Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Trainer",
+                name: "Trainers",
                 columns: table => new
                 {
-                    TrainerID = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TrainerID = table.Column<string>(nullable: false),
                     AppUserId = table.Column<Guid>(nullable: true),
                     Address = table.Column<string>(nullable: true),
                     IsActive = table.Column<bool>(nullable: false),
@@ -280,9 +277,9 @@ namespace Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Trainer", x => x.TrainerID);
+                    table.PrimaryKey("PK_Trainers", x => x.TrainerID);
                     table.ForeignKey(
-                        name: "FK_Trainer_AspNetUsers_AppUserId",
+                        name: "FK_Trainers_AspNetUsers_AppUserId",
                         column: x => x.AppUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -317,7 +314,7 @@ namespace Infrastructure.Data.Migrations
                     FeedbackID = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(maxLength: 255, nullable: true),
-                    AdminID = table.Column<int>(nullable: false),
+                    AdminID = table.Column<string>(nullable: true),
                     IsDelete = table.Column<bool>(nullable: false),
                     TypeFeedbackID = table.Column<int>(nullable: false)
                 },
@@ -329,7 +326,7 @@ namespace Infrastructure.Data.Migrations
                         column: x => x.AdminID,
                         principalTable: "Admins",
                         principalColumn: "AdminID",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Feedbacks_TypeFeedbacks_TypeFeedbackID",
                         column: x => x.TypeFeedbackID,
@@ -343,7 +340,7 @@ namespace Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     ClassID = table.Column<int>(nullable: false),
-                    TraineeID = table.Column<int>(nullable: false)
+                    TraineeID = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -392,7 +389,7 @@ namespace Infrastructure.Data.Migrations
                 {
                     ModuleID = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    AdminID = table.Column<int>(nullable: false),
+                    AdminID = table.Column<string>(nullable: true),
                     ModuleName = table.Column<string>(maxLength: 50, nullable: true),
                     StartTime = table.Column<DateTime>(nullable: false),
                     EndTime = table.Column<DateTime>(nullable: false),
@@ -415,7 +412,7 @@ namespace Infrastructure.Data.Migrations
                         column: x => x.FeedbackID,
                         principalTable: "Feedbacks",
                         principalColumn: "FeedbackID",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -424,7 +421,7 @@ namespace Infrastructure.Data.Migrations
                 {
                     ClassID = table.Column<int>(nullable: false),
                     ModuleID = table.Column<int>(nullable: false),
-                    TraineeID = table.Column<int>(nullable: false),
+                    TraineeID = table.Column<string>(nullable: false),
                     QuestionID = table.Column<int>(nullable: false),
                     Value = table.Column<int>(nullable: false)
                 },
@@ -463,7 +460,7 @@ namespace Infrastructure.Data.Migrations
                 {
                     ClassID = table.Column<int>(nullable: false),
                     ModuleID = table.Column<int>(nullable: false),
-                    TrainerID = table.Column<int>(nullable: false)
+                    TrainerID = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -481,9 +478,9 @@ namespace Infrastructure.Data.Migrations
                         principalColumn: "ModuleID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Assignments_Trainer_TrainerID",
+                        name: "FK_Assignments_Trainers_TrainerID",
                         column: x => x.TrainerID,
-                        principalTable: "Trainer",
+                        principalTable: "Trainers",
                         principalColumn: "TrainerID",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -598,8 +595,8 @@ namespace Infrastructure.Data.Migrations
                 column: "AppUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trainer_AppUserId",
-                table: "Trainer",
+                name: "IX_Trainers_AppUserId",
+                table: "Trainers",
                 column: "AppUserId");
         }
 
@@ -645,7 +642,7 @@ namespace Infrastructure.Data.Migrations
                 name: "Modules");
 
             migrationBuilder.DropTable(
-                name: "Trainer");
+                name: "Trainers");
 
             migrationBuilder.DropTable(
                 name: "Classes");

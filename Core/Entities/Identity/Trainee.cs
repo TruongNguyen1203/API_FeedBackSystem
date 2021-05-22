@@ -14,7 +14,7 @@ namespace Core.Entities
             this.Answers = new HashSet<Answer>();
         }
         [Key]
-        public int TraineeID { get; set; }
+        public string TraineeID { get; set; }
         public AppUser AppUser { get; set; }
          public bool IsActive { get; set; } 
         public string ActivationCode { get; set; }

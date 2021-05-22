@@ -10,6 +10,6 @@ namespace Core.Entities
         public virtual Module Module {get; set;}
         public int ModuleID {get; set;}
         public virtual Trainer Trainer {get; set;}
-        public int TrainerID {get; set;}
+        public string TrainerID {get; set;}
     }
 }

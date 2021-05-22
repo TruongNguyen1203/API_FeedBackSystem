@@ -13,7 +13,7 @@ namespace Core.Entities
             this.Assignments = new HashSet<Assignment>();
         }
         [Key]
-        public int TrainerID { get; set; }
+        public string TrainerID { get; set; }
         public AppUser AppUser { get; set; }
          public string Address { get; set; }
          public bool IsActive { get; set; } 

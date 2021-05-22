@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.Dtos;
+using API.Extensions;
 using Core.Entities;
 using Core.Entities.Identity;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -22,23 +25,26 @@ namespace API.Controllers
     {
         private readonly UserManager<AppUser> userManager;
         private readonly RoleManager<Role> roleManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly StoreContext _context;
         private readonly IConfiguration _configuration;
 
         public AuthenticationController(UserManager<AppUser> userManager,
                                 RoleManager<Role> roleManager,
-                                IConfiguration configuration, StoreContext context)
+                                IConfiguration configuration, StoreContext context, SignInManager<AppUser> signInManager)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
             _context = context;
+            _signInManager = signInManager;
         }
 
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
+
             var userExist= await userManager.FindByNameAsync(model.UserName);
             if(userExist!=null)
             {
@@ -61,6 +67,46 @@ namespace API.Controllers
                 }
                 return Ok( new {status="error", message=mes});
             }
+            
+            // add to admin, trainee, trainer table
+            switch(model.Role)
+            {
+                case Role.Admin:
+                
+                    Admin admin= new Admin()
+                    {
+                        AdminID= Guid.NewGuid().ToString(),
+                        AppUser=user
+                    };
+                    
+                    try
+                    {
+                        _context.Add(admin);
+                    }
+                    catch (Exception e)
+                    {
+                        return Ok( new {status="error", message=e.ToString()});
+                    }
+                    break;
+                case Role.Trainee:
+                    Trainee trainee = new Trainee()
+                    {
+                        TraineeID=Guid.NewGuid().ToString(),
+                        AppUser = user
+                        
+                    };     
+                    _context.Add(trainee);
+                    break;
+                case Role.Trainer:
+                    Trainer trainer= new Trainer()
+                    {
+                        TrainerID=Guid.NewGuid().ToString(),
+                        AppUser=user
+                    };
+                    _context.Add(trainer);
+                    break;
+            }
+            // check role
             if(!await roleManager.RoleExistsAsync(Role.Admin))
                 await roleManager.CreateAsync( new Role("Admin"));
             if(!await roleManager.RoleExistsAsync(Role.Trainee))
@@ -71,34 +117,7 @@ namespace API.Controllers
             {
                 return Ok(new {status="Fail",message="Role is incorrect"});
             }
-            // add to admin, trainee, trainer table
-            switch(model.Role)
-            {
-                case Role.Admin:
-                
-                    Admin admin= new Admin()
-                    {
-                        AppUser=user
-                    };
 
-                    _context.Add(admin);
-                    break;
-                case Role.Trainee:
-                    Trainee trainee = new Trainee()
-                    {
-                        AppUser = user
-                        
-                    };     
-                    _context.Add(trainee);
-                    break;
-                case Role.Trainer:
-                    Trainer trainer= new Trainer()
-                    {
-                        AppUser=user
-                    };
-                    _context.Add(trainer);
-                    break;
-            }
             result=await userManager.AddToRoleAsync(user,model.Role);
             if(!result.Succeeded)
             {
@@ -115,6 +134,7 @@ namespace API.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
+            var obj = await _signInManager.PasswordSignInAsync(model.UserName, model.Password,false, lockoutOnFailure: false);
             var user= await userManager.FindByNameAsync(model.UserName);
             if(user!=null && await userManager.CheckPasswordAsync(user,model.Password))
             {
@@ -129,6 +149,11 @@ namespace API.Controllers
                 {
                     authClaim.Add(new Claim(ClaimTypes.Role, userRole));
                 }
+                
+                var authIdentity= new ClaimsIdentity(authClaim,"Auth Identity");
+                var userPrincipal= new ClaimsPrincipal(new[] {authIdentity});
+
+                await HttpContext.SignInAsync(userPrincipal);
 
                 var authSigninKey= new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
                 var token= new JwtSecurityToken(
@@ -138,10 +163,27 @@ namespace API.Controllers
                     claims:authClaim,
                     signingCredentials: new SigningCredentials(authSigninKey,SecurityAlgorithms.HmacSha256)
                 );
+                var userId=user.UserName.ToString();
+                // set session
+
+                switch(model.Role)
+                {
+                    case "Admin":
+                         HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
+                         break;
+                    case "Trainee":
+                         HttpContext.Session.SetString(SessionKey.TraineeID,user.Id.ToString());
+                         break;
+                    case "Trainer":
+                         HttpContext.Session.SetString(SessionKey.TrainerID,user.Id.ToString());
+                         break;
+                }
+
                 return Ok(new
                 {
+                    userId=userId,
                     token= new JwtSecurityTokenHandler().WriteToken(token),
-                    UserLoginInfo=user,
+                    authClaim=authClaim,
                     roleManager=userRoles
                 });
             }
