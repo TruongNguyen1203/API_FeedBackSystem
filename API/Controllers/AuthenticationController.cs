@@ -93,6 +93,7 @@ namespace API.Controllers
                     {
                         TraineeID=Guid.NewGuid().ToString(),
                         AppUser = user
+                        
                     };     
                     _context.Add(trainee);
                     break;

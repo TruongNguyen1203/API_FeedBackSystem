@@ -56,6 +56,7 @@ namespace API
                 });
                 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 
             services.AddControllersWithViews()
                         .AddNewtonsoftJson(options =>
