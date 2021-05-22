@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -167,8 +168,28 @@ namespace API.Controllers
                 // set session
                 HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
                 HttpContext.Session.SetString(SessionKey.Role,model.Role);
-                HttpContext.Session.SetString(SessionKey.Id,user.Id.ToString());
+                
+                string specifiId="";
+                switch(model.Role)
+                {
+                    case Role.Admin:
+                        specifiId=_context.Admins.Include(x=>x.AppUser)
+                            .Where(x=>x.AppUser.Id==user.Id)
+                            .Select(x=>x.AdminID).SingleOrDefault().ToString();
+                        break;
+                    case Role.Trainee:
+                        specifiId=_context.Trainees.Include(x=>x.AppUser)
+                            .Where(x=>x.AppUser.Id==user.Id)
+                            .Select(x=>x.TraineeID).SingleOrDefault().ToString();
+                        break;
+                    case Role.Trainer:
+                        specifiId=_context.Trainers.Include(x=>x.AppUser)
+                            .Where(x=>x.AppUser.Id==user.Id)
+                            .Select(x=>x.TrainerID).SingleOrDefault().ToString();
+                        break;
+                }
 
+                HttpContext.Session.SetString(SessionKey.Id,specifiId);
                 return Ok(new
                 {
                     userId=userId,
@@ -177,7 +198,7 @@ namespace API.Controllers
                     roleManager=userRoles
                 });
             }
-            return Ok(new {success="Failed",message="Login Failed, Check Your Login Details"});
+            return Ok(new {success=false,message="Login Failed, Check Your Login Details"});
             // return Ok(user);
         }
         
