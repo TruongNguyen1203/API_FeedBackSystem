@@ -165,19 +165,9 @@ namespace API.Controllers
                 );
                 var userId=user.UserName.ToString();
                 // set session
-
-                switch(model.Role)
-                {
-                    case "Admin":
-                         HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
-                         break;
-                    case "Trainee":
-                         HttpContext.Session.SetString(SessionKey.TraineeID,user.Id.ToString());
-                         break;
-                    case "Trainer":
-                         HttpContext.Session.SetString(SessionKey.TrainerID,user.Id.ToString());
-                         break;
-                }
+                HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
+                HttpContext.Session.SetString(SessionKey.Role,model.Role);
+                HttpContext.Session.SetString(SessionKey.Id,user.Id.ToString());
 
                 return Ok(new
                 {
