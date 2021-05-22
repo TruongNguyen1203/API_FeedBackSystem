@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Dtos;
+using API.Extensions;
+using API.ViewModel;
 using Core.Entities;
 using Core.Entities.Identity;
 using Core.Interfaces;
@@ -19,10 +22,12 @@ namespace API.Controllers
     public class ClassesController : ControllerBase
     {
         private readonly IClassRepository _classtRepo;
+        private readonly StoreContext _context;
 
-        public ClassesController(IClassRepository classRepository)
+        public ClassesController(IClassRepository classRepository, StoreContext context)
         {
             _classtRepo = classRepository;
+            _context = context;
         }
 
         [HttpGet]
@@ -30,7 +35,42 @@ namespace API.Controllers
         {
             try
             {
-                return Ok(await _classtRepo.GetClasses());
+                var role = HttpContext.Session.GetString(SessionKey.Role);
+                var userId = HttpContext.Session.GetString(SessionKey.Id);
+                switch (role)
+                {
+                    case Role.Admin:
+                        return Ok(await _classtRepo.GetClasses());
+                    case Role.Trainer:
+                        var assignments = _context.Assignments.Include(a => a.Class).ThenInclude(a => a.Enrollments).Where(a => a.TrainerID == userId).ToList();
+                        List<ClassListByTrainerDTO> classList = new List<ClassListByTrainerDTO>();
+
+                        foreach (var a in assignments)
+                        {
+                            ClassListByTrainerDTO classTemp = new ClassListByTrainerDTO();
+                            classTemp.ClassID = a.ClassID;
+                            classTemp.ClassName = a.Class.ClassName;
+                            classTemp.NumberOfTrainee = a.Class.Enrollments.Count();
+                            classList.Add(classTemp);
+                        }
+                        return Ok(classList);
+                    
+                    case Role.Trainee:
+                        var enrollments = _context.Enrollments.Include(a => a.Class).Where(a => a.TraineeID == userId).ToList();
+                        List<ClassListByTrainee> classListByTrainees = new List<ClassListByTrainee>();
+
+                        foreach(var e in enrollments)
+                        {
+                            ClassListByTrainee temp = new ClassListByTrainee();
+                            temp.ClassID = e.ClassID;
+                            temp.ClassName = e.Class.ClassName;
+                            temp.NumberOfTrainee = e.Class.Enrollments.Count();
+                            classListByTrainees.Add(temp);
+                        }
+                        return Ok(classListByTrainees);
+                    default:
+                        return Unauthorized();
+                }
             }
             catch (Exception)
             {
@@ -39,17 +79,55 @@ namespace API.Controllers
             }
         }
 
-        // [HttpGet("{id}")]
-        // public ActionResult<Class> GetClass(int id)
-        // {
-        //     var @class = _unitOfWork.Class.GetFirstOrDefault(x => x.ClassID == id, includeProperties: "Assignments,Answers,Enrollments");
-        //     if (@class == null)
-        //         return NotFound();
-        //     return Ok(@class);
-        // }
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult> GetClass(int id)
+        {
+            try
+            {
+                var role = HttpContext.Session.GetString(SessionKey.Role);
+                var userId = HttpContext.Session.GetString(SessionKey.Id);
+                var result = await _classtRepo.GetClassById(id);
 
-        //Add new class
-        //[Authorize(Roles = Role.Admin)]
+                if (result == null) return NotFound();
+                switch (role)
+                {
+                    case Role.Admin:
+                        return Ok(result);
+                    case Role.Trainer: case Role.Trainee:
+                        var @class = await _context.Classes.Include(c => c.Enrollments).ThenInclude(c => c.Trainee).ThenInclude(c => c.AppUser).FirstOrDefaultAsync(c => c.ClassID == id);
+
+                        TraineeListVM trainees = new TraineeListVM();
+                        trainees.ClassId = result.ClassID;
+                        trainees.ClassName = result.ClassName;
+                        List<TraineeVM> listTrainees = new List<TraineeVM>();
+
+                        int count = 1;
+
+                        foreach (var e in @class.Enrollments)
+                        {
+                            TraineeVM tempTrainee = new TraineeVM();
+                            tempTrainee.Number = count++;
+                            tempTrainee.TraineeID = e.Trainee.TraineeID;
+                            tempTrainee.TraineeName = e.Trainee.AppUser.UserName;
+                            listTrainees.Add(tempTrainee);
+
+                        }
+                        trainees.TraineeList = listTrainees;
+                        return Ok(trainees);
+
+                    default:
+                        return Unauthorized();
+
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+
+
         [HttpPost]
         public async Task<ActionResult<Class>> CreateClass(Class @class)
         {
@@ -70,25 +148,7 @@ namespace API.Controllers
             }
         }
 
-         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Class>> GetClass(int id)
-        {
-            try
-            {
-                var result = await _classtRepo.GetClassById(id);
 
-                if (result == null) return NotFound();
-
-                return result;
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error retrieving data from the database");
-            }
-        }
-
-        //[Authorize(Roles = Role.Admin)]
         [HttpPut("{id}")]
         public async Task<ActionResult<Class>> UpdateClass(int id, Class @class)
         {
@@ -111,8 +171,7 @@ namespace API.Controllers
             }
         }
 
-        //Delete a class
-        //[Authorize(Roles = Role.Admin)]
+
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<Class>> DeleteClass(int id)
         {
@@ -133,6 +192,7 @@ namespace API.Controllers
                     "Error deleting data");
             }
         }
+
 
     }
 }

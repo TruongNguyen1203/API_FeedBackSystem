@@ -11,6 +11,7 @@ namespace Core.Interfaces
         Task<Class> AddClass(Class @class);
         Task<Class> UpdateClass(Class @class);
         Task<Class> DeleteClass(int Id);
+        Task<IEnumerable<Class>> GetClassesByTrainer();
 
     }
 }

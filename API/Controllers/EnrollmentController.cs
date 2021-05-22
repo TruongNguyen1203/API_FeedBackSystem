@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-    [Authorize(Roles = Role.Admin)]
     [ApiController]
 
     [Route("api/[controller]")]
@@ -38,6 +37,26 @@ namespace API.Controllers
             }
         }
 
+        //multiple parameter
+        [HttpGet("{classId}/{traineeId}")]
+        public async Task<IActionResult> GetDetailEnrollment(int classId, string traineeId)
+        {
+            try
+            {
+                var result = await _enrollmentRepo.GetEnrollment(classId,traineeId);
+
+                if (result == null) return NotFound();
+
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+
+
         [HttpPut]
         public async Task<ActionResult<Enrollment>> UpdateEnrollment(int classId, string traineeId, Enrollment enrollment)
         {
@@ -60,19 +79,19 @@ namespace API.Controllers
             }
         }
 
-        [HttpDelete]        // duoc roi, nha dang on
+        [HttpDelete]
         public async Task<ActionResult<Enrollment>> DeleteEnrollment(int classId, string traineeId)
         {
             try
             {
-                var enrollmentToDelete = await _enrollmentRepo.GetEnrollment(classId,traineeId);
+                var enrollmentToDelete = await _enrollmentRepo.GetEnrollment(classId, traineeId);
 
                 if (enrollmentToDelete == null)
                 {
                     return NotFound($"Enrollment not found");
                 }
 
-               return await _enrollmentRepo.DeleteEnrollment(classId,traineeId);
+                return await _enrollmentRepo.DeleteEnrollment(classId, traineeId);
             }
             catch (Exception)
             {

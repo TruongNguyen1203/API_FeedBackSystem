@@ -10,10 +10,9 @@ namespace Infrastructure.Data
         public UnitOfWork(StoreContext db)
         {
             _db = db;
-            Class = new ClassRepository(_db);
-
+            
         }
-         public IClassRepository Class { get; private set; }
+        
 
     
 

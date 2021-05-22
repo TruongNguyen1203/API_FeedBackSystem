@@ -49,6 +49,13 @@ namespace Infrastructure.Data
             return await _context.Classes.ToListAsync();
         }
 
+         public async Task<IEnumerable<Class>> GetClassesByTrainer()
+        {
+
+            return await _context.Classes.Include(c => c.Assignments).Include(c => c.Enrollments).ThenInclude(t => t.Trainee).ThenInclude(u => u.AppUser).ToListAsync();
+        }
+
+    
     
 
         public async Task<Class> UpdateClass(Class @class)
@@ -58,7 +65,9 @@ namespace Infrastructure.Data
 
             if (result != null)
             {
-                result = @class;
+                result.ClassName = @class.ClassName;
+                result.Capacity = @class.Capacity;
+                result.EndTime = @class.EndTime;
 
                 await _context.SaveChangesAsync();
 
