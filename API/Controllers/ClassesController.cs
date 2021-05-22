@@ -18,48 +18,50 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class ClassesController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly StoreContext _context;
+        private readonly IClassRepository _classtRepo;
 
-        public ClassesController(IUnitOfWork unitOfWork, StoreContext context)
+        public ClassesController(IClassRepository classRepository)
         {
-            _unitOfWork = unitOfWork;
-            _context = context;
+            _classtRepo = classRepository;
         }
 
         [HttpGet]
-        [Authorize(Roles = Role.Admin)]
-        public IActionResult GetAll()
+        public async Task<ActionResult> GetClasses()
         {
-        
-            var classes = _unitOfWork.Class.GetAll(includeProperties: "Assignments,Answers,Enrollments");
-            //var classes = _unitOfWork.Class.GetAll();
-            return Ok(classes);
+            try
+            {
+                return Ok(await _classtRepo.GetClasses());
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
         }
 
-        [HttpGet("{id}")]
-        public ActionResult<Class> GetClass(int id)
-        {
-            var @class = _unitOfWork.Class.GetFirstOrDefault(x => x.ClassID == id, includeProperties: "Assignments,Answers,Enrollments");
-            if (@class == null)
-                return NotFound();
-            return Ok(@class);
-        }
+        // [HttpGet("{id}")]
+        // public ActionResult<Class> GetClass(int id)
+        // {
+        //     var @class = _unitOfWork.Class.GetFirstOrDefault(x => x.ClassID == id, includeProperties: "Assignments,Answers,Enrollments");
+        //     if (@class == null)
+        //         return NotFound();
+        //     return Ok(@class);
+        // }
 
         //Add new class
-        [Authorize(Roles = Role.Admin)]
+        //[Authorize(Roles = Role.Admin)]
         [HttpPost]
-        public ActionResult<Class> CreateClass(Class @class)
+        public async Task<ActionResult<Class>> CreateClass(Class @class)
         {
             try
             {
                 if (@class == null)
                     return BadRequest();
 
-                _unitOfWork.Class.Add(@class);
-                _unitOfWork.Save();
+                var createdClass = await _classtRepo.AddClass(@class);
 
-                return CreatedAtAction(nameof(CreateClass), new { id = @class.ClassID }, @class);
+                return CreatedAtAction(nameof(GetClass),
+                    new { id = createdClass.ClassID }, createdClass);
             }
             catch (Exception)
             {
@@ -68,41 +70,62 @@ namespace API.Controllers
             }
         }
 
-        [Authorize(Roles = Role.Admin)]
-        [HttpPut("{id}")]
-        public IActionResult UpdateClass(int id, Class @class)
-        {
-            if (id != @class.ClassID)
-                return BadRequest();
-
-            // var existingClass = _unitOfWork.Class.GetFirstOrDefault(x => x.ClassID == id, includeProperties: "Assignments,Answers,Enrollments");
-            var existingClass = _context.Classes.AsNoTracking().FirstOrDefault(x => x.ClassID == id);
-            if (existingClass is null)
-                return NotFound();
-
-            _unitOfWork.Class.Update(@class);
-            _unitOfWork.Save();
-
-            return NoContent();
-        }
-
-        //Delete a class
-        [Authorize(Roles = Role.Admin)]
-        [HttpDelete("{id:int}")]
-        public ActionResult<Class> DeleteClass(int id)
+         [HttpGet("{id:int}")]
+        public async Task<ActionResult<Class>> GetClass(int id)
         {
             try
             {
-                var classToDelete = _context.Classes.AsNoTracking().FirstOrDefault(x => x.ClassID == id);
+                var result = await _classtRepo.GetClassById(id);
+
+                if (result == null) return NotFound();
+
+                return result;
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+
+        //[Authorize(Roles = Role.Admin)]
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Class>> UpdateClass(int id, Class @class)
+        {
+            try
+            {
+                if (id != @class.ClassID)
+                    return BadRequest("ClassID mismatch");
+
+                var classToUpdate = await _classtRepo.GetClassById(id);
+
+                if (classToUpdate == null)
+                    return NotFound($"Class not found");
+
+                return await _classtRepo.UpdateClass(@class);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error updating data");
+            }
+        }
+
+        //Delete a class
+        //[Authorize(Roles = Role.Admin)]
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<Class>> DeleteClass(int id)
+        {
+            try
+            {
+                var classToDelete = await _classtRepo.GetClassById(id);
 
                 if (classToDelete == null)
                 {
-                    return NotFound($"Class with Id = {id} not found");
+                    return NotFound($"Class not found");
                 }
 
-                _unitOfWork.Class.Remove(classToDelete);
-                _unitOfWork.Save();
-                return NoContent();
+                return await _classtRepo.DeleteClass(id);
             }
             catch (Exception)
             {

@@ -4,18 +4,13 @@ using Core.Entities;
 
 namespace Core.Interfaces
 {
-    public interface IClassRepository : IRepository<Class>
+    public interface IClassRepository 
     {
-        void Update(Class @class);
-        // Task<Class> GetClassByIdAsync(int id);
-        // Task<IReadOnlyList<Class>> GetClassesAsync();
-        // Task<IReadOnlyList<Assignment>> GetAssignmentsAsync();
-        // Task<IReadOnlyList<Answer>> GetAnswersAsync();
-        //  Task<IReadOnlyList<Enrollment>> GetEnrollmentsAsync();
+        Task<IEnumerable<Class>> GetClasses();
+        Task<Class> GetClassById(int id);
+        Task<Class> AddClass(Class @class);
+        Task<Class> UpdateClass(Class @class);
+        Task<Class> DeleteClass(int Id);
 
-
-        // Task<Class> AddClass(Class @class);
-        // Task<Class> UpdateClass(Class @class);
-        // void DeleteClass(int classId);
     }
 }
