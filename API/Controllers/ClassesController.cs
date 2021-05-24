@@ -42,7 +42,11 @@ namespace API.Controllers
                     case Role.Admin:
                         return Ok(await _classtRepo.GetClasses());
                     case Role.Trainer:
-                        var assignments = _context.Assignments.Include(a => a.Class).ThenInclude(a => a.Enrollments).Where(a => a.TrainerID == userId).ToList();
+                        var assignments = _context.Assignments.Include(a => a.Class)
+                                                                .ThenInclude(a => a.Enrollments)
+                                                                .Where(a => a.TrainerID == userId)
+                                                                .ToList();
+
                         List<ClassListByTrainerDTO> classList = new List<ClassListByTrainerDTO>();
 
                         foreach (var a in assignments)
@@ -56,7 +60,10 @@ namespace API.Controllers
                         return Ok(classList);
                     
                     case Role.Trainee:
-                        var enrollments = _context.Enrollments.Include(a => a.Class).Where(a => a.TraineeID == userId).ToList();
+                        var enrollments = _context.Enrollments.Include(a => a.Class)
+                                                                .Where(a => a.TraineeID == userId)
+                                                                .ToList();
+                                                                
                         List<ClassListByTrainee> classListByTrainees = new List<ClassListByTrainee>();
 
                         foreach(var e in enrollments)
@@ -93,8 +100,12 @@ namespace API.Controllers
                 {
                     case Role.Admin:
                         return Ok(result);
+
                     case Role.Trainer: case Role.Trainee:
-                        var @class = await _context.Classes.Include(c => c.Enrollments).ThenInclude(c => c.Trainee).ThenInclude(c => c.AppUser).FirstOrDefaultAsync(c => c.ClassID == id);
+                        var @class = await _context.Classes.Include(c => c.Enrollments)
+                                                            .ThenInclude(c => c.Trainee)
+                                                            .ThenInclude(c => c.AppUser)
+                                                            .FirstOrDefaultAsync(c => c.ClassID == id);
 
                         TraineeListVM trainees = new TraineeListVM();
                         trainees.ClassId = result.ClassID;
