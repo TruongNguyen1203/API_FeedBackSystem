@@ -55,9 +55,6 @@ namespace API.Controllers
         [HttpPut("{update}")]
         public IActionResult Update([FromBody]Question question)
         {
-            var topic = _context.Topics.Where(x=>x.TopicID==question.TopicID).SingleOrDefault();
-
-            question.Topic=topic;
             _context.Questions.Update(question);
             _context.SaveChanges();
             return Ok(new {success=true, message="Add Question success!"}); 
