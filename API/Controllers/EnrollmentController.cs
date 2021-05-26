@@ -70,7 +70,8 @@ namespace API.Controllers
                 if (enrollmentToUpdate == null)
                     return NotFound($"Enrollment not found");
 
-                return await _enrollmentRepo.UpdateEnrollment(enrollment);
+                await _enrollmentRepo.UpdateEnrollment(enrollment);
+                 return Ok(new {success=true, message="Update enrollment success!"}); 
             }
             catch (Exception)
             {
@@ -91,7 +92,8 @@ namespace API.Controllers
                     return NotFound($"Enrollment not found");
                 }
 
-                return await _enrollmentRepo.DeleteEnrollment(classId, traineeId);
+                await _enrollmentRepo.DeleteEnrollment(classId, traineeId);
+                 return Ok(new {success=true, message="Delete enrollment success!"}); 
             }
             catch (Exception)
             {

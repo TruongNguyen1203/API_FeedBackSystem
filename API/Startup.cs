@@ -54,10 +54,9 @@ namespace API
                         IssuerSigningKey= new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Secret"]))
                     };
                 });
-                
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
             services.AddScoped<IClassRepository, ClassRepository>();
+            services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
             services.AddControllersWithViews()
                         .AddNewtonsoftJson(options =>

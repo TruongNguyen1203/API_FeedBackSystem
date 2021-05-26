@@ -145,12 +145,11 @@ namespace API.Controllers
             try
             {
                 if (@class == null)
-                    return BadRequest();
+                    return Ok(new {success=false, message="Add class false!"});
 
                 var createdClass = await _classtRepo.AddClass(@class);
 
-                return CreatedAtAction(nameof(GetClass),
-                    new { id = createdClass.ClassID }, createdClass);
+                return Ok(new {success=true, message="Add class success!"});
             }
             catch (Exception)
             {
@@ -173,7 +172,8 @@ namespace API.Controllers
                 if (classToUpdate == null)
                     return NotFound($"Class not found");
 
-                return await _classtRepo.UpdateClass(@class);
+                await _classtRepo.UpdateClass(@class);
+                return Ok(new {success=true, message="Update class success!"}); 
             }
             catch (Exception)
             {
@@ -195,7 +195,8 @@ namespace API.Controllers
                     return NotFound($"Class not found");
                 }
 
-                return await _classtRepo.DeleteClass(id);
+                await _classtRepo.DeleteClass(id);
+                return Ok(new {success=true, message="Delete class success!"}); 
             }
             catch (Exception)
             {
