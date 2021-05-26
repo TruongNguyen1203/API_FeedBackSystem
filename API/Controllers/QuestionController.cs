@@ -70,7 +70,16 @@ namespace API.Controllers
         [HttpPut("{update}")]
         public IActionResult Update([FromBody]QuestionDto questionDto)
         {
-            var question =_context.Questions.Where(x=>x.QuestionID==questionDto.QuestionID)
+            //check existed question
+            var existed =_context.Questions.Where(x=>x.QuestionID!=questionDto.QuestionID && x.QuestionContent==questionDto.QuestionContent)
+                                            .ToList();
+            if(existed.Count()>0)
+            {
+                return Ok(new {success=false,message="Question existed!"});
+            }
+            try
+            {
+                var question =_context.Questions.Where(x=>x.QuestionID==questionDto.QuestionID)
                                             .Select(x=> new Question(){
                                                 QuestionID=x.QuestionID,
                                                 Topic=x.Topic,
@@ -79,9 +88,15 @@ namespace API.Controllers
                                                 Answers=x.Answers,
                                                 QuestionContent=questionDto.QuestionContent
                                             }).FirstOrDefault();
-            _context.Questions.Update(question);
-            _context.SaveChanges();
-            return Ok(new {success=true, message="Update Question success!"}); 
+                _context.Questions.Update(question);
+                _context.SaveChanges();
+                return Ok(new {success=true, message="Update Question success!"}); 
+            }
+            catch(Exception e)
+            {
+                return Ok(new {success=false, message=e.ToString()});
+            }
+            
         }
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
