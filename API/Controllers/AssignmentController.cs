@@ -34,15 +34,34 @@ namespace API.Controllers
                                                     .Include(a => a.Module)
                                                     .Include(a => a.Trainer)
                                                     .ThenInclude(a => a.AppUser)
-                                                    .Select(x => new
-                                                    {
-                                                        moduleName = x.Module.ModuleName,
-                                                        className = x.Class.ClassName,
-                                                        trainerName = x.Trainer.AppUser.UserName,
-                                                        registrationCode = x.RegistrationCode,
-                                                    })
+                                                    // .Select(x => new
+                                                    // {
+                                                    //     moduleName = x.Module.ModuleName,
+                                                    //     className = x.Class.ClassName,
+                                                    //     trainerName = x.Trainer.AppUser.UserName,
+                                                    //     registrationCode = x.RegistrationCode,
+                                                    // })
                                                     .ToList();
                 return Ok(data);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+
+        //multiple parameter
+        [HttpGet("{moduleId}/{classId}/{trainerId}")]
+        public async Task<IActionResult> GetAssignment(int moduleId, int classId, string trainerId)
+        {
+            try
+            {
+                var result = await _assignRepo.GetAssignment(moduleId, classId, trainerId);
+
+                if (result == null) return NotFound();
+
+                return Ok(result);
             }
             catch (Exception)
             {
@@ -85,10 +104,10 @@ namespace API.Controllers
                 var Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
                 assignment.RegistrationCode = "CL" + assignment.ClassID + "M" + assignment.ModuleID + "T" + Timestamp;
 
-                 await _assignRepo.AddAssignment(assignment);
+                await _assignRepo.AddAssignment(assignment);
 
-                return Ok(new {success=true, message="Update assignment success!"}); 
-                
+                return Ok(new { success = true, message = "Update assignment success!" });
+
             }
             catch (Exception)
             {
@@ -99,21 +118,31 @@ namespace API.Controllers
 
 
         //Edit assignment
-        [HttpPut]
-        public async Task<ActionResult<Assignment>> UpdateAssignment(int moduleId, int classId, string trainerId, Assignment assignment)
+        [HttpPut("{moduleId}/{classId}/{trainerId}")]
+        public IActionResult UpdateAssignment(int moduleId, int classId, string trainerId, Assignment assignment)
         {
             try
             {
-                if (moduleId != assignment.ModuleID && classId !=assignment.ClassID && trainerId != assignment.TrainerID)
+                if (moduleId != assignment.ModuleID && classId != assignment.ClassID)
                     return BadRequest("moduleId, classId, trainerId mismatch");
 
-                var assignmentToUpdate = await _assignRepo.GetAssignment(moduleId,classId,trainerId);
+                //var result = await _assignRepo.UpdateAssignment(assignment);
+                // var result = _context.Assignments.Include(a => a.Module)
+                //                                    .Include(a => a.Class)
+                //                                    .Include(a => a.Trainer)
+                //                                    .ThenInclude(a => a.AppUser)
+                //                                    .FirstOrDefaultAsync(a => a.ClassID == assignment.ClassID
+                //                                                            && a.ModuleID == assignment.ModuleID
+                //                                                           );
+                var trainer = _context.Trainers.Include(a => a.AppUser).Where(t => t.TrainerID == assignment.TrainerID).SingleOrDefault();
+                assignment.Trainer = trainer;
 
-                if (assignmentToUpdate == null)
-                    return NotFound($"Assignment not found");
+                _context.Assignments.Update(assignment);
+                _context.SaveChanges();
 
-                await _assignRepo.UpdateAssignment(assignment);
-                 return Ok(new {success=true, message="Update assignment success!"}); 
+
+                //return Ok(assignment);
+                return Ok(new { success = true, message = "Update assignment success!" });
             }
             catch (Exception)
             {

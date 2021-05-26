@@ -160,14 +160,12 @@ namespace API.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Class>> UpdateClass(int id, Class @class)
+        public async Task<ActionResult<Class>> UpdateClass(Class @class)
         {
             try
             {
-                if (id != @class.ClassID)
-                    return BadRequest("ClassID mismatch");
-
-                var classToUpdate = await _classtRepo.GetClassById(id);
+           
+                var classToUpdate = await _classtRepo.GetClassById(@class.ClassID);
 
                 if (classToUpdate == null)
                     return NotFound($"Class not found");

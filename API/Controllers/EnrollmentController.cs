@@ -38,7 +38,7 @@ namespace API.Controllers
         }
 
         //multiple parameter
-        [HttpGet("{classId}/{traineeId}")]
+        [HttpGet("getDetail/{classId}/{traineeId}")]
         public async Task<IActionResult> GetDetailEnrollment(int classId, string traineeId)
         {
             try
@@ -57,12 +57,13 @@ namespace API.Controllers
         }
 
 
-        [HttpPut]
+          [HttpPut]
         public async Task<ActionResult<Enrollment>> UpdateEnrollment(int classId, string traineeId, Enrollment enrollment)
         {
             try
             {
-                if (classId != enrollment.ClassID && traineeId != enrollment.TraineeID)
+
+                 if (classId != enrollment.ClassID && traineeId != enrollment.TraineeID)
                     return BadRequest("ClassID and TraineeID mismatch");
 
                 var enrollmentToUpdate = await _enrollmentRepo.GetEnrollment(classId, traineeId);
