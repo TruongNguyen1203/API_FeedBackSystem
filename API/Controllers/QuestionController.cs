@@ -69,7 +69,14 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            var questions=_context.Questions.Include(x=>x.Topic).ToList();
+            var questions=_context.Questions
+                        .Select(x=>new{
+                            TopicID=x.TopicID,
+                            TopicName=x.Topic.TopicName,
+                            QuestionID=x.QuestionID,
+                            QuestionContent=x.QuestionContent
+                        })
+                        .ToList();
             return Ok(questions);
         }
 
