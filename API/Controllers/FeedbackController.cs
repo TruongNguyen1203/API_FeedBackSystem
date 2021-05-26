@@ -34,12 +34,13 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public IActionResult GetFeedback(int id)
         {
-            var feedback=_context.Feedbacks.Include(x=>x.Admin)
-                        .Include(x=>x.Feedback_Questions)
-                        .ThenInclude(x=>x.Question)
-                        .ThenInclude(x=>x.Topic)
-                        .Where(x=>x.FeedbackID==id)
-                        .FirstOrDefault();
+            Dictionary<string,List<string>> feedback = new Dictionary<string, List<string>>();
+            var allTopic=_context.Topics.Select(x=>x.TopicName).ToList();
+            foreach(var item in allTopic)
+            {
+                feedback.Add(item,_context.Feedback_Questions.Where(x=>x.FeedbackID==id &&x.Question.Topic.TopicName==item)
+                                                .Select(x=>x.Question.QuestionContent).ToList());
+            }
             return Ok(feedback);
         }
         [HttpGet("add")]
@@ -48,17 +49,20 @@ namespace API.Controllers
             // get all typefeedbacks
             var typeFbs =_context.TypeFeedbacks.ToList();
 
-            //get all admin
-            var admins=_context.Admins.Include(x=>x.AppUser).ToList();
-
             // get list topic with its question
             var topic= _context.Topics.Include(x=>x.Questions).ToList().Distinct();
 
-            return Ok(new {TypeFeedbacks=typeFbs,admins=admins,topic=topic});
+            return Ok(new {TypeFeedbacks=typeFbs,topic=topic});
         }
         [HttpPost("add")]
         public IActionResult Add([FromBody] FeedbackDto feedbackDto)
         {
+            //check existed title
+            var existed=_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title).FirstOrDefault();
+            if(existed!=null)
+            {
+                return Ok(new {success=false,message="Add failed! Feedback existed!"});
+            }
             // get list question of feedbackDto 
             var lstQuestion = new List<Question>();
             foreach(var q in feedbackDto.lstQuestionID)
@@ -74,7 +78,7 @@ namespace API.Controllers
             
             if(topic != _context.Topics.ToList().Count)
             {
-                return Ok(new {success=false,message="Add fail!",topic=topic});
+                return Ok(new {success=false,message="Add fail! You have to choose all topic!"});
             }
 
             // prepare
@@ -98,7 +102,6 @@ namespace API.Controllers
                 Question=fq
                 });
             }
-
             // use try catch because add both feedback and feedback_Question
             try
             {
