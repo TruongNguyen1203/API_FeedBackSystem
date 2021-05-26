@@ -57,14 +57,14 @@ namespace API.Controllers
         {
             _context.Questions.Update(question);
             _context.SaveChanges();
-            return Ok(new {success=true, message="Add Question success!"}); 
+            return Ok(new {success=true, message="Update Question success!"}); 
         }
         [HttpDelete("delete/{id}")]
         public IActionResult Delete(int id)
         {
             // ooh no
             var question=_context.Questions.Find(id);
-             return Ok(new {success=true, message="Add Question success!",question=question});
+             return Ok(new {success=true, message="Delete Question success!",question=question});
         }
         [HttpGet]
         public IActionResult GetAll()

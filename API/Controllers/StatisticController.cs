@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using API.Dtos;
 using Infrastructure.Data;
@@ -27,20 +28,36 @@ namespace API.Controllers
             {
                 moduleID=_context.Modules.Select(x=>x.ModuleID).FirstOrDefault();
             }
-            // get all answer
-            int totalAnswer=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
-                                            .Distinct().ToList().Count();
+            // get all answer group by value
+            // int totalAnswer=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
+            //                                 .Distinct().ToList().Count();
             // get statistic base on value of answer
             // group by 
-            var values=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
-                                        .GroupBy(x=> x.Value)
-                                        .Select(x=>new 
-                                        {
-                                            Value=x.Key,
-                                            Percent=(decimal)x.Count()*100/totalAnswer
-                                        })
-                                        .ToList();
-            return Ok(values);
+            // var baseOnClass=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
+            //                             .GroupBy(x=> x.Value)
+            //                             .Select(x=>new 
+            //                             {
+            //                                 Value=x.Key,
+            //                                 Percent=(decimal)x.Count()*100/totalAnswer
+            //                             })
+            //                             .ToList();
+            var baseOnClass=CalStatistic(classID,moduleID);
+            // var baseOnTopic=_context.
+            return Ok(baseOnClass);
+        }
+        [HttpGet("topic")]
+        public IActionResult PieTopic(int? classID, int? moduleID)
+        {
+            var lstTopic=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
+                                        .Select(x=> x.Question.Topic.TopicName)
+                                        .Distinct().ToList();
+            Dictionary<string,List<PieStatistic>> result= new Dictionary<string, List<PieStatistic>>();
+
+            foreach(var item in lstTopic)
+            {
+                result.Add(item,CalStatisticTopic(classID,moduleID,item));
+            }
+            return Ok(result);
         }
         [HttpGet("comment")]
         // chưa test
@@ -61,7 +78,6 @@ namespace API.Controllers
                                                         Content=x.Comment
                                                     })
                                                     .ToList();
-
             return Ok( comments);
         }
         [HttpGet("select")]
@@ -80,6 +96,39 @@ namespace API.Controllers
                                         }).ToList();
             return Ok(new {classes,courses});
         }
-        
+        public List<PieStatistic> CalStatistic(int? classID,int? moduleID)
+        {
+            // get all answer group by value
+            int totalAnswer=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
+                                            .Distinct().ToList().Count();
+            // get statistic base on value of answer
+            // group by 
+            var baseOnClass=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
+                                        .GroupBy(x=> x.Value)
+                                        .Select(x=>new PieStatistic()
+                                        {
+                                            Value=x.Key,
+                                            Percent=(decimal)x.Count()*100/totalAnswer
+                                        })
+                                        .ToList();
+            return baseOnClass;
+        } 
+        public List<PieStatistic> CalStatisticTopic(int? classID,int? moduleID, string topicName)
+        {
+            // get all answer group by value
+            int totalAnswer=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID &&x.Question.Topic.TopicName==topicName)
+                                            .Distinct().ToList().Count();
+            // get statistic base on value of answer
+            // group by 
+            var baseOnClass=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID &&x.Question.Topic.TopicName==topicName)
+                                        .GroupBy(x=> x.Value)
+                                        .Select(x=>new PieStatistic()
+                                        {
+                                            Value=x.Key,
+                                            Percent=(decimal)x.Count()*100/totalAnswer
+                                        })
+                                        .ToList();
+            return baseOnClass;
+        }
     }
 }
