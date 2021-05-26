@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using API.Dtos;
 using API.Extensions;
@@ -25,19 +26,34 @@ namespace API.Controllers
         }
 
         [HttpPost("add")]
-        public IActionResult Add([FromBody]QuestionDto question)
+        public IActionResult Add([FromBody]QuestionDto questionDto)
         {
-            var topic = _context.Topics.Where(x=>x.TopicID==question.TopicID).SingleOrDefault();
-
-            var questionModel= new Question()
+            // check exist question
+            var exist=_context.Questions.Where(x=>x.TopicID==questionDto.TopicID && x.QuestionContent.Trim()==questionDto.QuestionContent.Trim())
+                                        .FirstOrDefault();
+            if(exist!=null)
             {
-                TopicID=topic.TopicID,
-                Topic=topic,
-                QuestionContent=question.QuestionContent
-            };
-            _context.Add(questionModel);
-            _context.SaveChanges();
-            return Ok(new {success=true, message="Add Question success!"});
+                return Ok(new {success=false, message="Question existed!"});
+            }
+            try
+            {
+                var topic = _context.Topics.Where(x=>x.TopicID==questionDto.TopicID).SingleOrDefault();
+
+                var questionModel= new Question()
+                {
+                    TopicID=topic.TopicID,
+                    Topic=topic,
+                    QuestionContent=questionDto.QuestionContent
+                };
+                _context.Add(questionModel);
+                _context.SaveChanges();
+                return Ok(new {success=true, message="Add Question success!"});
+            }
+            catch(Exception e)
+            {
+                return Ok(new {success=false, message=e.ToString()});
+            }
+            
         }
 
         [HttpGet("{id}")]
