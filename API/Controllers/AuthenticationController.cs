@@ -191,7 +191,8 @@ namespace API.Controllers
 
                 HttpContext.Session.SetString(SessionKey.Id,specifiId);
                 return Ok(new
-                {
+                {   
+                    success=true,
                     userId = userId,
                     token = new JwtSecurityTokenHandler().WriteToken(token),
                     authClaim = authClaim,
