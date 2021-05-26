@@ -6,11 +6,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using API.Dtos;
-using API.Extensions;
 using Core.Entities;
 using Core.Entities.Identity;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -66,7 +64,7 @@ namespace API.Controllers
                 {
                     mes += error.Description + "\n";
                 }
-                return Ok(new { status = "error", message = mes });
+                return Ok(new { success = false, message = mes });
             }
 
             // add to admin, trainee, trainer table
@@ -86,7 +84,7 @@ namespace API.Controllers
                     }
                     catch (Exception e)
                     {
-                        return Ok(new { status = "error", message = e.ToString() });
+                        return Ok(new { success = false, message = e.ToString() });
                     }
                     break;
                 case Role.Trainee:
@@ -127,9 +125,9 @@ namespace API.Controllers
                 {
                     mes += error.Description + "\n";
                 }
-                return Ok(new { status = "error", message = mes });
+                return Ok(new { success = false, message = mes });
             }
-            return Ok(new { status = "Success", message = "User created successfully and add to it's table" });
+            return Ok(new { success = true, message = "Register success!" });
         }
         [HttpPost]
         [Route("login")]
@@ -154,8 +152,6 @@ namespace API.Controllers
                 var authIdentity = new ClaimsIdentity(authClaim, "Auth Identity");
                 var userPrincipal = new ClaimsPrincipal(new[] { authIdentity });
 
-                await HttpContext.SignInAsync(userPrincipal);
-
                 var authSigninKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
                 var token = new JwtSecurityToken(
                     issuer: _configuration["JWT:ValidIssuer"],
@@ -164,11 +160,7 @@ namespace API.Controllers
                     claims: authClaim,
                     signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256)
                 );
-                var userId = user.UserName.ToString();
-                // set session
-                HttpContext.Session.SetString(SessionKey.AdminName,user.UserName.ToString());
-                HttpContext.Session.SetString(SessionKey.Role,model.Role);
-                
+                var userName = user.UserName.ToString();
                 string specifiId="";
                 switch(model.Role)
                 {
@@ -188,19 +180,17 @@ namespace API.Controllers
                             .Select(x=>x.TrainerID).SingleOrDefault().ToString();
                         break;
                 }
-
-                HttpContext.Session.SetString(SessionKey.Id,specifiId);
                 return Ok(new
-                {
-                    userId = userId,
+                {   
+                    success=true,
+                    userName = userName,
+                    userID=specifiId,
                     token = new JwtSecurityTokenHandler().WriteToken(token),
                     authClaim = authClaim,
-                    roleManager = userRoles
+                    roleManager = userRoles[0]
                 });
             }
             return Ok(new {success=false,message="Login Failed, Check Your Login Details"});
-            // return Ok(user);
         }
-
     }
 }

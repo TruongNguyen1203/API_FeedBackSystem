@@ -59,18 +59,26 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public IActionResult GetQuestion(int id)
         {
-            var question =_context.Questions.Find(id);
-            var q= new QuestionDto()
-            {
-                QuestionContent=question.QuestionContent,
-                TopicID=question.TopicID
-            };
-
-            return Ok(q);
+            var question =_context.Questions.Where(x=>x.QuestionID==id)
+                                            .Select(x=> new QuestionDto(){
+                                                QuestionID=x.QuestionID,
+                                                QuestionContent=x.QuestionContent,
+                                                TopicID=x.TopicID
+                                            }).FirstOrDefault();
+            return Ok(question);
         }
         [HttpPut("{update}")]
-        public IActionResult Update([FromBody]Question question)
+        public IActionResult Update([FromBody]QuestionDto questionDto)
         {
+            var question =_context.Questions.Where(x=>x.QuestionID==questionDto.QuestionID)
+                                            .Select(x=> new Question(){
+                                                QuestionID=x.QuestionID,
+                                                Topic=x.Topic,
+                                                IsDeleted=x.IsDeleted,
+                                                Feedback_Questions=x.Feedback_Questions,
+                                                Answers=x.Answers,
+                                                QuestionContent=questionDto.QuestionContent
+                                            }).FirstOrDefault();
             _context.Questions.Update(question);
             _context.SaveChanges();
             return Ok(new {success=true, message="Update Question success!"}); 
@@ -80,7 +88,7 @@ namespace API.Controllers
         {
             // ooh no
             var question=_context.Questions.Find(id);
-             return Ok(new {success=true, message="Delete Question success!",question=question});
+            return Ok(new {success=true, message="Delete Question success!",question=question});
         }
         [HttpGet]
         public IActionResult GetAll()
