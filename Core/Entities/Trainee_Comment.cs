@@ -5,7 +5,6 @@ namespace Core.Entities
     {
        
         public int ClassID { get; set; }
-     
         public int ModuleID { get; set; }
         
         [MaxLength(50)]

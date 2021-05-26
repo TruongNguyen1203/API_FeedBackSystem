@@ -22,7 +22,7 @@ namespace Core.Entities
         public bool IsDelete { get; set; }
         public DateTime FeedbackStartTime { get; set; }
         public DateTime FeedbackEndTime { get; set; }
-        public int FeedbackID { get; set; }     // co nghe t noi ko
+        public int FeedbackID { get; set; }     
         public virtual Feedback Feedback { get; set; }
         public virtual ICollection<Assignment> Assignments { get; set; }
         public virtual ICollection<Answer> Answers { get; set; }  
