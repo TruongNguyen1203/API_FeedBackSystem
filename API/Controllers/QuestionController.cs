@@ -68,10 +68,10 @@ namespace API.Controllers
             return Ok(question);
         }
         [HttpPut("{update}")]
-        public IActionResult Update([FromBody]QuestionDto questionDto)
+        public IActionResult Update(int questionID, string questionContent)
         {
             //check existed question
-            var existed =_context.Questions.Where(x=>x.QuestionID!=questionDto.QuestionID && x.QuestionContent==questionDto.QuestionContent)
+            var existed =_context.Questions.Where(x=>x.QuestionID!=questionID && x.QuestionContent==questionContent)
                                             .ToList();
             if(existed.Count()>0)
             {
@@ -79,14 +79,14 @@ namespace API.Controllers
             }
             try
             {
-                var question =_context.Questions.Where(x=>x.QuestionID==questionDto.QuestionID)
+                var question =_context.Questions.Where(x=>x.QuestionID==questionID)
                                             .Select(x=> new Question(){
                                                 QuestionID=x.QuestionID,
                                                 Topic=x.Topic,
                                                 IsDeleted=x.IsDeleted,
                                                 Feedback_Questions=x.Feedback_Questions,
                                                 Answers=x.Answers,
-                                                QuestionContent=questionDto.QuestionContent
+                                                QuestionContent=questionContent
                                             }).FirstOrDefault();
                 _context.Questions.Update(question);
                 _context.SaveChanges();
