@@ -37,6 +37,7 @@ namespace API.Controllers
             {
                 var role = HttpContext.Session.GetString(SessionKey.Role);
                 var userId = HttpContext.Session.GetString(SessionKey.Id);
+                return Ok(new {userId=userId});
                 switch (role)
                 {
                     case Role.Admin:
