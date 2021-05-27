@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using API.Dtos;
 using Core.Entities;
 using Core.Entities.Identity;
 using Core.Interfaces;
@@ -17,10 +19,12 @@ namespace API.Controllers
     public class EnrollmentController : ControllerBase
     {
         private readonly IEnrollmentRepository _enrollmentRepo;
+        private readonly StoreContext _context;
 
-        public EnrollmentController(IEnrollmentRepository enrollmentRepository)
+        public EnrollmentController(IEnrollmentRepository enrollmentRepository,StoreContext context)
         {
             _enrollmentRepo = enrollmentRepository;
+              _context = context;
         }
 
         [HttpGet]
@@ -43,7 +47,22 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _enrollmentRepo.GetEnrollment(classId,traineeId);
+                var result = _context.Enrollments.Where(x => x.ClassID == classId && x.TraineeID == traineeId)
+                                                    .Select(x => new DetailEnrollmentDto(){
+                                                            TraineeID = x.TraineeID,
+                                                            Phone = x.Trainee.AppUser.PhoneNumber,
+                                                            TraineeName = x.Trainee.AppUser.UserName,
+                                                            Address = "Thu Duc",
+                                                            Email = x.Trainee.AppUser.Email,
+                                                            CLassID = x.ClassID,
+                                                            StartTime = x.Class.StartTime,
+                                                            ClassName = x.Class.ClassName,
+                                                            EndTime = x.Class.EndTime,
+                                                            Capacity = x.Class.Capacity
+
+                                                    })
+                                                    .FirstOrDefault();
+
 
                 if (result == null) return NotFound();
 
@@ -57,28 +76,26 @@ namespace API.Controllers
         }
 
 
-          [HttpPut]
-        public async Task<ActionResult<Enrollment>> UpdateEnrollment(int classId, string traineeId, Enrollment enrollment)
+       [HttpPut("{update}/{oldClassId}")]
+        public IActionResult Update([FromBody]EnrollmentDto enrollmentDto, int oldClassId)
         {
-            try
-            {
+            var deleted = _context.Enrollments.Where(x => x.ClassID == oldClassId && x.TraineeID == enrollmentDto.TraineeID).FirstOrDefault();
 
-                 if (classId != enrollment.ClassID && traineeId != enrollment.TraineeID)
-                    return BadRequest("ClassID and TraineeID mismatch");
+            _context.Enrollments.Remove(deleted);
+            _context.SaveChanges();
+            //get class change
 
-                var enrollmentToUpdate = await _enrollmentRepo.GetEnrollment(classId, traineeId);
+            Class newClass = _context.Classes.FirstOrDefault(c => c.ClassID == enrollmentDto.ClassId);
+                                    
+            Enrollment newEnrollment = new Enrollment();
+            newEnrollment.ClassID = enrollmentDto.ClassId;
+            newEnrollment.TraineeID = enrollmentDto.TraineeID;
 
-                if (enrollmentToUpdate == null)
-                    return NotFound($"Enrollment not found");
+             _context.Enrollments.Add(newEnrollment);
+            _context.SaveChanges();
+            return Ok(new {success=true, message="Update enrollment success!"});
 
-                await _enrollmentRepo.UpdateEnrollment(enrollment);
-                 return Ok(new {success=true, message="Update enrollment success!"}); 
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error updating data");
-            }
+      
         }
 
         [HttpDelete]
