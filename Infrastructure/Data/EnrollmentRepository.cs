@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Entities;
 using Core.Interfaces;
@@ -38,13 +39,19 @@ namespace Infrastructure.Data
 
         public async Task<Enrollment> GetEnrollment(int classId, string traineeId)
         {
-           return await _context.Enrollments.FirstOrDefaultAsync(c => c.ClassID == classId && c.TraineeID == traineeId);
+           return await _context.Enrollments
+                            .FirstOrDefaultAsync(c => c.ClassID == classId && c.TraineeID == traineeId);
         }
 
-        public async Task<IEnumerable<Enrollment>> GetEnrollments()
+        public async Task<IEnumerable<object>> GetEnrollments()
         {
-            return await _context.Enrollments.Include(c => c.Class)
-                                                .Include(t => t.Trainee).ThenInclude( u => u.AppUser).ToListAsync();
+            return (IEnumerable<object>)await _context.Enrollments.Select(x=> new {
+                                                    traineeId=x.TraineeID,
+                                                    TraineeName=x.Trainee.AppUser.Name,
+                                                    classId=x.ClassID,
+                                                    ClassName=x.Class.ClassName
+                                                })
+                                                .ToListAsync();
         }
 
         public async Task<Enrollment> UpdateEnrollment(Enrollment enrollment)
