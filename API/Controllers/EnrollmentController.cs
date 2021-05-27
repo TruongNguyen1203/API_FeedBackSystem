@@ -47,7 +47,22 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _enrollmentRepo.GetEnrollment(classId,traineeId);
+                var result = _context.Enrollments.Where(x => x.ClassID == classId && x.TraineeID == traineeId)
+                                                    .Select(x => new DetailEnrollmentDto(){
+                                                            TraineeID = x.TraineeID,
+                                                            Phone = x.Trainee.AppUser.PhoneNumber,
+                                                            TraineeName = x.Trainee.AppUser.UserName,
+                                                            Address = "Thu Duc",
+                                                            Email = x.Trainee.AppUser.Email,
+                                                            CLassID = x.ClassID,
+                                                            StartTime = x.Class.StartTime,
+                                                            ClassName = x.Class.ClassName,
+                                                            EndTime = x.Class.EndTime,
+                                                            Capacity = x.Class.Capacity
+
+                                                    })
+                                                    .FirstOrDefault();
+
 
                 if (result == null) return NotFound();
 
