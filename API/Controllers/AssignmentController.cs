@@ -34,13 +34,13 @@ namespace API.Controllers
                                                     .Include(a => a.Module)
                                                     .Include(a => a.Trainer)
                                                     .ThenInclude(a => a.AppUser)
-                                                    // .Select(x => new
-                                                    // {
-                                                    //     moduleName = x.Module.ModuleName,
-                                                    //     className = x.Class.ClassName,
-                                                    //     trainerName = x.Trainer.AppUser.UserName,
-                                                    //     registrationCode = x.RegistrationCode,
-                                                    // })
+                                                    .Select(x => new
+                                                    {
+                                                        moduleName = x.Module.ModuleName,
+                                                        className = x.Class.ClassName,
+                                                        trainerName = x.Trainer.AppUser.UserName,
+                                                        registrationCode = x.RegistrationCode,
+                                                    })
                                                     .ToList();
                 return Ok(data);
             }
@@ -106,7 +106,7 @@ namespace API.Controllers
 
                 await _assignRepo.AddAssignment(assignment);
 
-                return Ok(new { success = true, message = "Update assignment success!" });
+                return Ok(new { success = true, message = "Add assignment success!" });
 
             }
             catch (Exception)
