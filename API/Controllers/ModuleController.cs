@@ -147,6 +147,7 @@ namespace API.Controllers
                                 FeedbackStartTime=moduleDto.FeedbackStartTime,
                                 FeedbackEndTime=moduleDto.FeedbackEndTime
                             }).FirstOrDefaultAsync();
+                    _context.Update(module);
                     await _context.SaveChangesAsync();
                 return Ok(new {success=true, message="Update Success!"});
             }
