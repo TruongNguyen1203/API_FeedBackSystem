@@ -44,9 +44,15 @@ namespace Infrastructure.Data
             return await _context.Classes.FirstOrDefaultAsync(c => c.ClassID == id);
         }
 
-        public async Task<IEnumerable<Class>> GetClasses()
+        public async Task<IEnumerable<object>> GetClasses()
         {
-            return await _context.Classes.ToListAsync();
+            return await _context.Classes.Select(x=> new{
+                                                ClassID=x.ClassID,
+                                                ClassName=x.ClassName,
+                                                Capacity=x.Capacity,
+                                                StartDate=x.StartTime,
+                                                EndDate=x.EndTime
+                                            }).ToListAsync();
         }
 
          public async Task<IEnumerable<Class>> GetClassesByTrainer()
