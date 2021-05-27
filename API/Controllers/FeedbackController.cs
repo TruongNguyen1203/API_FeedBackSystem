@@ -142,12 +142,12 @@ namespace API.Controllers
         public IActionResult Update([FromBody] FeedbackDto feedbackDto)
         {
             // check exist name
-            // var exist =_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title)
-            //             .FirstOrDefault();
-            // if(exist!=null)
-            // {
-            //     return Ok(new {success=false,message="Update fail!"});
-            // }
+            var exist =_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title)
+                        .FirstOrDefault();
+            if(exist!=null)
+            {
+                return Ok(new {success=false,message="Update fail!"});
+            }
             // get oldFeedback to remove old list question
             var oldFeedback =_context.Feedbacks.Include(x=>x.Feedback_Questions)
                             .Include(x=>x.Admin)
@@ -187,7 +187,6 @@ namespace API.Controllers
                 Question=fq
                 });
             }
-            // return Ok(new {delete=oldFeedback.   Feedback_Questions,Add=lstFQ,Update=newFeedback});
             try
             {
                 // replace old questions
