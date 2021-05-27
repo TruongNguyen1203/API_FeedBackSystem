@@ -47,6 +47,7 @@ namespace Infrastructure.Data
         {
             return (IEnumerable<object>)await _context.Enrollments.Select(x=> new {
                                                     traineeId=x.TraineeID,
+                                                    TraineeUserName=x.Trainee.AppUser.UserName,
                                                     TraineeName=x.Trainee.AppUser.Name,
                                                     classId=x.ClassID,
                                                     ClassName=x.Class.ClassName
