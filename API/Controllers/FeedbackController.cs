@@ -59,9 +59,9 @@ namespace API.Controllers
         [HttpPost("add")]
         public IActionResult Add([FromBody] FeedbackDto feedbackDto)
         {
-            // get list question for feedback
+            // get list question of feedbackDto 
             var lstQuestion = new List<Question>();
-            foreach(var q in feedbackDto.lstQuestion)
+            foreach(var q in feedbackDto.lstQuestionID)
             {
                 lstQuestion.Add(_context.Questions.Include(x=>x.Topic)
                             .Where(x=>x.QuestionID==q)
@@ -132,20 +132,72 @@ namespace API.Controllers
                         .ThenInclude(x=>x.Topic)
                         .Where(x=>x.FeedbackID==id)
                         .FirstOrDefault();
-            return Ok(new {typeFeedbacks=typeFbs,admins=admins,topic=topic,feedback=feedback});
+            return Ok(new {feedback=feedback});
         }
-        // [HttpPut("update")]
-        // public IActionResult Update([FromBody] FeedbackDto feedbackDto)
-        // {
-        //     // check exist name
-        //     var exist =_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title)
-        //                 .FirstOrDefault();
-        //     if(exist!=null)
-        //     {
-        //         return Ok(new {success=false,message="Update fail!"});
-        //     }
+        
+        [HttpPut("update")]
+        public IActionResult Update([FromBody] FeedbackDto feedbackDto)
+        {
+            // check exist name
+            // var exist =_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title)
+            //             .FirstOrDefault();
+            // if(exist!=null)
+            // {
+            //     return Ok(new {success=false,message="Update fail!"});
+            // }
+            // get oldFeedback to remove old list question
+            var oldFeedback =_context.Feedbacks.Include(x=>x.Feedback_Questions)
+                            .Include(x=>x.Admin)
+                            .Where(x=>x.FeedbackID==feedbackDto.ID)
+                            .FirstOrDefault();
+            
+            // add new questions
+             // get list question of feedbackDto 
+            var lstQuestion = new List<Question>();
+            foreach(var q in feedbackDto.lstQuestionID)
+            {
+                lstQuestion.Add(_context.Questions.Include(x=>x.Topic)
+                            .Where(x=>x.QuestionID==q)
+                            .FirstOrDefault());
+            }
+            // have to choose at least 1 question per topic
+            var topic = lstQuestion
+                        .Select(x=>x.TopicID)
+                        .Distinct().Count();
+            
+            if(topic != _context.Topics.ToList().Count)
+            {
+                return Ok(new {success=false,message="Add fail!",topic=topic});
+            }
+            
+            var typeFeedback=_context.TypeFeedbacks.Find(feedbackDto.TypeFeedbackID);
+            oldFeedback.Title=feedbackDto.Title;
+            oldFeedback.TypeFeedback=typeFeedback;
+            
 
-
-        // }
+            // add feedback_question
+            List<Feedback_Question> lstFQ= new List<Feedback_Question>();
+            foreach(var fq in lstQuestion)
+            {
+                lstFQ.Add(new Feedback_Question(){
+                Feedback=oldFeedback,
+                Question=fq
+                });
+            }
+            // return Ok(new {delete=oldFeedback.   Feedback_Questions,Add=lstFQ,Update=newFeedback});
+            try
+            {
+                // replace old questions
+                _context.RemoveRange(oldFeedback.Feedback_Questions);
+                _context.Feedbacks.Update(oldFeedback);
+                _context.AddRange(lstFQ);
+                _context.SaveChanges();
+                return Ok(new {success=true, message="Update success!"});
+            }
+            catch(Exception e)
+            {
+                return Ok(new { success=false,message=e.ToString()});
+            }
+        }
     }
 }

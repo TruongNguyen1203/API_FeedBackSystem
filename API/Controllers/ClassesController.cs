@@ -31,12 +31,10 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetClasses()
+        public async Task<ActionResult> GetClasses(string role, string userId)
         {
             try
             {
-                var role = HttpContext.Session.GetString(SessionKey.Role);
-                var userId = HttpContext.Session.GetString(SessionKey.Id);
                 switch (role)
                 {
                     case Role.Admin:
@@ -86,18 +84,17 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<ActionResult> GetClass(int id)
+        [HttpGet("detail")]
+        public async Task<ActionResult> GetClass(int id,string role, string userId)
         {
             try
             {
-                var role = HttpContext.Session.GetString(SessionKey.Role);
-                var userId = HttpContext.Session.GetString(SessionKey.Id);
                 var result = await _classtRepo.GetClassById(id);
 
                 if (result == null) return NotFound();
                 switch (role)
                 {
+                    // du
                     case Role.Admin:
                         return Ok(result);
 
@@ -202,7 +199,23 @@ namespace API.Controllers
                     "Error deleting data");
             }
         }
-
+        [HttpGet("update")]
+        public async Task<ActionResult> GetDetail(int id, string role, string userId)
+        {
+            if(role!=Role.Admin)
+            {
+                return Unauthorized();
+            }
+            var temp=await _context.Classes.Where(x=>x.ClassID==id)
+                                                    .Select(x=>new{
+                                                        ClassID=x.ClassID,
+                                                        ClassName=x.ClassName,
+                                                        Capacity=x.Capacity,
+                                                        StartDate=x.StartTime,
+                                                        EndDate=x.EndTime
+                                                    }).FirstOrDefaultAsync();
+            return Ok(temp);
+        }
 
     }
 }

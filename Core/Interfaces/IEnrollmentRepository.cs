@@ -6,7 +6,7 @@ namespace Core.Interfaces
 {
     public interface IEnrollmentRepository
     {
-        Task<IEnumerable<Enrollment>> GetEnrollments();
+        Task<IEnumerable<object>> GetEnrollments();
         Task<Enrollment> GetEnrollment(int classId, string traineeId);
         Task<Enrollment> AddEnrollment(Enrollment enrollment);
         Task<Enrollment> UpdateEnrollment( Enrollment enrollment);
