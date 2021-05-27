@@ -11,5 +11,7 @@ namespace Core.Entities
         public int ModuleID {get; set;}
         public virtual Trainer Trainer {get; set;}
         public string TrainerID {get; set;}
+
+        public string RegistrationCode {get; set;}
     }
 }

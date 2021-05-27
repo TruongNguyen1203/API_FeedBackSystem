@@ -6,7 +6,7 @@ namespace Core.Interfaces
 {
     public interface IClassRepository 
     {
-        Task<IEnumerable<Class>> GetClasses();
+        Task<IEnumerable<object>> GetClasses();
         Task<Class> GetClassById(int id);
         Task<Class> AddClass(Class @class);
         Task<Class> UpdateClass(Class @class);

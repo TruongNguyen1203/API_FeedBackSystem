@@ -4,14 +4,16 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    partial class StoreContextModelSnapshot : ModelSnapshot
+    [Migration("20210524161650_AddAssignment")]
+    partial class AddAssignment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,9 +74,6 @@ namespace Infrastructure.Data.Migrations
 
                     b.Property<string>("TrainerID")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("RegistrationCode")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ClassID", "ModuleID", "TrainerID");
 
@@ -615,6 +614,8 @@ namespace Infrastructure.Data.Migrations
                         .HasForeignKey("TrainerID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                     b.Property<string>("RegistrationCode")
+                        .HasColumnType("nvarchar(50)");
                 });
 
             modelBuilder.Entity("Core.Entities.Enrollment", b =>
