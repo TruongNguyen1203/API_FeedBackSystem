@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using API.Dtos;
 using API.Extensions;
 using Core.Entities;
@@ -22,43 +23,47 @@ namespace API.Controllers
             _context = context;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<ActionResult> GetAll()
         {
-            var feedbacks=_context.Feedbacks.Select(x=> new {
+            var feedbacks=await _context.Feedbacks.Select(x=> new {
                 FeedbackID=x.FeedbackID,
                 Title=x.Title,
                 AdminID=x.AdminID
-            }).ToList();
+            }).ToListAsync();
             return Ok(feedbacks);
         }
         [HttpGet("{id}")]
-        public IActionResult GetFeedback(int id)
+        public async Task<ActionResult> GetFeedback(int id)
         {
+            var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id).Select(x=> new{ 
+                                           FeedbackTitle=x.Title,
+                                           AdminID=x.AdminID             
+                                        }).FirstOrDefaultAsync();
             Dictionary<string,List<string>> feedback = new Dictionary<string, List<string>>();
-            var allTopic=_context.Topics.Select(x=>x.TopicName).ToList();
+            var allTopic= await _context.Topics.Select(x=>x.TopicName).ToListAsync();
             foreach(var item in allTopic)
             {
-                feedback.Add(item,_context.Feedback_Questions.Where(x=>x.FeedbackID==id &&x.Question.Topic.TopicName==item)
-                                                .Select(x=>x.Question.QuestionContent).ToList());
+                feedback.Add(item,await _context.Feedback_Questions.Where(x=>x.FeedbackID==id &&x.Question.Topic.TopicName==item)
+                                                .Select(x=>x.Question.QuestionContent).ToListAsync());
             }
-            return Ok(feedback);
+            return Ok(new{feedbackTitle=info.FeedbackTitle,adminID=info.AdminID,content=feedback});
         }
         [HttpGet("add")]
-        public IActionResult Add()
+        public async Task<ActionResult> Add()
         {
             // get all typefeedbacks
-            var typeFbs =_context.TypeFeedbacks.ToList();
+            var typeFbs =await _context.TypeFeedbacks.ToListAsync();
 
             // get list topic with its question
-            var topic= _context.Topics.Include(x=>x.Questions).ToList().Distinct();
+            var topic=await _context.Topics.Include(x=>x.Questions).Distinct().ToListAsync();
 
             return Ok(new {TypeFeedbacks=typeFbs,topic=topic});
         }
         [HttpPost("add")]
-        public IActionResult Add([FromBody] FeedbackDto feedbackDto)
+        public async Task<ActionResult> Add([FromBody] FeedbackDto feedbackDto)
         {
             //check existed title
-            var existed=_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title).FirstOrDefault();
+            var existed=await _context.Feedbacks.Where(x=>x.Title==feedbackDto.Title).FirstOrDefaultAsync();
             if(existed!=null)
             {
                 return Ok(new {success=false,message="Add failed! Feedback existed!"});
@@ -82,9 +87,9 @@ namespace API.Controllers
             }
 
             // prepare
-            var admin =_context.Admins.Include(x=>x.AppUser)
+            var admin =await _context.Admins.Include(x=>x.AppUser)
                     .Where(x=>x.AdminID==HttpContext.Session.GetString(SessionKey.Id))
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
             var typeFeedback=_context.TypeFeedbacks.Find(feedbackDto.TypeFeedbackID);
 
             var newFeedback= new Feedback()
@@ -120,48 +125,26 @@ namespace API.Controllers
             }
         }
         
-        [HttpGet("update")]
-        public IActionResult Update(int id)
-        {
-            // get all typefeedbacks
-            var typeFbs =_context.TypeFeedbacks.ToList();
-
-            //get all admin
-            var admins=_context.Admins.Include(x=>x.AppUser).ToList();
-            var topic= _context.Topics.Include(x=>x.Questions).ToList().Distinct();
-            var feedback=_context.Feedbacks.Include(x=>x.Admin)
-                        .Include(x=>x.Feedback_Questions)
-                        .ThenInclude(x=>x.Question)
-                        .ThenInclude(x=>x.Topic)
-                        .Where(x=>x.FeedbackID==id)
-                        .FirstOrDefault();
-            return Ok(new {feedback=feedback});
-        }
-        
         [HttpPut("update")]
-        public IActionResult Update([FromBody] FeedbackDto feedbackDto)
+        public async Task<ActionResult> Update([FromBody] FeedbackDto feedbackDto)
         {
             // check exist name
-            var exist =_context.Feedbacks.Where(x=>x.Title==feedbackDto.Title)
-                        .FirstOrDefault();
+            var exist =await _context.Feedbacks.Where(x=>x.FeedbackID!=feedbackDto.ID && x.Title==feedbackDto.Title)
+                        .FirstOrDefaultAsync();
             if(exist!=null)
             {
                 return Ok(new {success=false,message="Update fail!"});
             }
-            // get oldFeedback to remove old list question
-            var oldFeedback =_context.Feedbacks.Include(x=>x.Feedback_Questions)
-                            .Include(x=>x.Admin)
-                            .Where(x=>x.FeedbackID==feedbackDto.ID)
-                            .FirstOrDefault();
+           
             
             // add new questions
              // get list question of feedbackDto 
             var lstQuestion = new List<Question>();
             foreach(var q in feedbackDto.lstQuestionID)
             {
-                lstQuestion.Add(_context.Questions.Include(x=>x.Topic)
+                lstQuestion.Add(await _context.Questions.Include(x=>x.Topic)
                             .Where(x=>x.QuestionID==q)
-                            .FirstOrDefault());
+                            .FirstOrDefaultAsync());
             }
             // have to choose at least 1 question per topic
             var topic = lstQuestion
@@ -170,13 +153,25 @@ namespace API.Controllers
             
             if(topic != _context.Topics.ToList().Count)
             {
-                return Ok(new {success=false,message="Add fail!",topic=topic});
+                return Ok(new {success=false,message="Add fail!, You have to choose all topic!"});
             }
             
             var typeFeedback=_context.TypeFeedbacks.Find(feedbackDto.TypeFeedbackID);
-            oldFeedback.Title=feedbackDto.Title;
-            oldFeedback.TypeFeedback=typeFeedback;
             
+            var admin=await _context.Admins.FirstOrDefaultAsync(x=>x.AdminID==feedbackDto.AdminID);
+             // get oldFeedback to remove old list question
+            var oldFeedback =await _context.Feedbacks.Include(x=>x.Feedback_Questions)
+                            .Include(x=>x.Admin)
+                            .Where(x=>x.FeedbackID==feedbackDto.ID)
+                            .Select(x=> new Feedback(){
+                                FeedbackID=x.FeedbackID,
+                                Title=feedbackDto.Title,
+                                Admin=admin,
+                                IsDelete=x.IsDelete,
+                                TypeFeedback=typeFeedback,
+                                Feedback_Questions=x.Feedback_Questions
+                            })
+                            .FirstOrDefaultAsync();
 
             // add feedback_question
             List<Feedback_Question> lstFQ= new List<Feedback_Question>();
@@ -202,4 +197,4 @@ namespace API.Controllers
             }
         }
     }
-}
+} 
