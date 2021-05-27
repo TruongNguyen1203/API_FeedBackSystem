@@ -55,23 +55,9 @@ namespace Infrastructure.Data
                                                 .ToListAsync();
         }
 
-        public async Task<Enrollment> UpdateEnrollment(Enrollment enrollment)
+        public Task<Enrollment> UpdateEnrollment(Enrollment enrollment)
         {
-            var result = await _context.Enrollments
-                .FirstOrDefaultAsync(e => e.ClassID == enrollment.ClassID && e.TraineeID == enrollment.TraineeID);
-
-            if (result != null)
-            {
-                result.Class = enrollment.Class;
-
-                await _context.SaveChangesAsync();
-
-                return result;
-            }
-
-            return null;
+            throw new System.NotImplementedException();
         }
-
-    
     }
 }

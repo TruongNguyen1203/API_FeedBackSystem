@@ -42,7 +42,7 @@ namespace Infrastructure.Data
         }
 
 
-        public async Task<IEnumerable<Assignment>> SearchAssignments(string inputText)
+        public async Task<IEnumerable<object>> SearchAssignments(string inputText)
         {
             IQueryable<Assignment> query = _context.Assignments.Include(a => a.Class)
                                                                 .Include(a => a.Module)
@@ -54,8 +54,17 @@ namespace Infrastructure.Data
                                             || a.Class.ClassName.Contains(inputText)
                                             || a.Trainer.AppUser.UserName.Contains(inputText)
                                             || a.RegistrationCode.Contains(inputText));
+                
+                
             }
-            return await query.ToListAsync();
+            return (IEnumerable<object>)await query.Select(x => new
+                                                    {
+                                                        moduleName = x.Module.ModuleName,
+                                                        className = x.Class.ClassName,
+                                                        trainerName = x.Trainer.AppUser.UserName,
+                                                        registrationCode = x.RegistrationCode,
+                                                    })
+                                                .ToListAsync();
         }
 
         //Update assignment
@@ -85,8 +94,11 @@ namespace Infrastructure.Data
             //await _context.SaveChangesAsync();
             return result;
 
+        }
 
-
+        public async Task<Assignment> DeleteAssigment(int moduleId, int classId, string trainerId)
+        {
+            throw new System.NotImplementedException();
         }
 
 
