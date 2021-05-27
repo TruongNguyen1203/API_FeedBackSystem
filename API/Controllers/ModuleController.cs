@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Dtos;
@@ -97,6 +98,17 @@ namespace API.Controllers
             var module =await _context.Modules.Include(x=>x.Feedback)
                         .Include(x=>x.Admin)
                         .Where(x=>x.ModuleID==id &&x.IsDelete==false)
+                        .Select(x=>new {
+                            ModuleID=x.ModuleID,
+                            ModuleName=x.ModuleName,
+                            AdminID=x.AdminID,
+                            AdminName=x.Admin.AppUser.UserName,
+                            StartDate=x.StartTime.ToString("MM/dd/yyyy"),
+                            EndDate=x.EndTime.ToString("MM/dd/yyyy"),
+                            FeedbackTitleID=x.Feedback.FeedbackID,
+                            FeedbackStartTime=x.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
+                            FeedbackEndTime=x.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
+                        })
                         .FirstOrDefaultAsync();
 
             var lstAdminID=await _context.Admins
@@ -117,26 +129,25 @@ namespace API.Controllers
         [HttpPut("update")]
         public async Task<ActionResult> Update([FromBody] ModuleDto moduleDto)
         {
-            var user=await _context.Admins.Include(x=>x.AppUser)
-                            .Where(x=>x.AdminID==moduleDto.AdminID)
-                            .FirstOrDefaultAsync();
-            var feedback=await _context.Feedbacks.FindAsync(moduleDto.FeedbackTitleID);
-
-            var module=await _context.Modules.Where(x=>x.ModuleID==moduleDto.ModuleID &&x.IsDelete==false)
-                        .Select(x=>new Module(){
-                            ModuleID=x.ModuleID,
-                            ModuleName=moduleDto.ModuleName,
-                            StartTime=moduleDto.StartDate,
-                            EndTime=moduleDto.EndDate,
-                            Feedback=feedback,
-                            Admin=user,
-                            FeedbackStartTime=moduleDto.FeedbackStartTime,
-                            FeedbackEndTime=moduleDto.FeedbackEndTime
-                        }).FirstOrDefaultAsync();
-            // await _context.Modules.Update(module);
             try
             {
-                await _context.SaveChangesAsync();
+                var user=await _context.Admins.Include(x=>x.AppUser)
+                            .Where(x=>x.AdminID==moduleDto.AdminID)
+                            .FirstOrDefaultAsync();
+                var feedback=await _context.Feedbacks.FindAsync(moduleDto.FeedbackTitleID);
+
+                var module=await _context.Modules.Where(x=>x.ModuleID==moduleDto.ModuleID &&x.IsDelete==false)
+                            .Select(x=>new Module(){
+                                ModuleID=x.ModuleID,
+                                ModuleName=moduleDto.ModuleName,
+                                StartTime=moduleDto.StartDate,
+                                EndTime=moduleDto.EndDate,
+                                Feedback=feedback,
+                                Admin=user,
+                                FeedbackStartTime=moduleDto.FeedbackStartTime,
+                                FeedbackEndTime=moduleDto.FeedbackEndTime
+                            }).FirstOrDefaultAsync();
+                    await _context.SaveChangesAsync();
                 return Ok(new {success=true, message="Update Success!"});
             }
             catch(Exception)
@@ -182,29 +193,19 @@ namespace API.Controllers
         {
             var modules=await _context.Trainee_Assignments.Where(x=>x.TraineeID==traineeID)
                                             .Join(_context.Assignments.Include(x=>x.Module),x=>x.RegistrationCode,y=>y.RegistrationCode, 
-                                            (x,y)=> y.Module).ToListAsync();  
-                                            // (x,y)=>new{
-                                            //     ModuleID=y.ModuleID,
-                                            //     ModuleName=y.Module.ModuleName,
-                                            //     AdminID=y.Module.AdminID,
-                                            //     AdminUserName=y.Module.Admin.AppUser.UserName,
-                                            //     StartDate=y.Module.StartTime.ToString("MM/dd/yyyy"),
-                                            //     EndDate=y.Module.EndTime.ToString("MM/dd/yyyy"),
-                                            //     FeedbackTitle=y.Module.Feedback.Title,
-                                            //     FeedbackStartTime=y.Module.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
-                                            //     FeedbackEndTime=y.Module.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
-                                            // })
-            // var results= modules.Select(x=>new{
-            //                                     ModuleID=x.ModuleID,
-            //                                     ModuleName=x.ModuleName,
-            //                                     AdminID=x.AdminID,
-            //                                     AdminUserName=x.Admin.AppUser.UserName,
-            //                                     StartDate=x.StartTime.ToString("MM/dd/yyyy"),
-            //                                     EndDate=x.EndTime.ToString("MM/dd/yyyy"),
-            //                                     FeedbackTitle=x.Feedback.Title,
-            //                                     FeedbackStartTime=x.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
-            //                                     FeedbackEndTime=x.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
-            //                                 }).ToList();                                           
+                                            (x,y)=> y.Module)
+                                            .Where(y=>y.IsDelete==false)
+                                            .Select(x=>new{
+                                                ModuleID=x.ModuleID,
+                                                ModuleName=x.ModuleName,
+                                                AdminID=x.AdminID,
+                                                AdminUserName=x.Admin.AppUser.UserName,
+                                                StartDate=x.StartTime.ToString("MM/dd/yyyy"),
+                                                EndDate=x.EndTime.ToString("MM/dd/yyyy"),
+                                                FeedbackTitle=x.Feedback.Title,
+                                                FeedbackStartTime=x.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
+                                                FeedbackEndTime=x.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
+                                            }).ToListAsync();
             return Ok(modules);                                                    
         }
     }
