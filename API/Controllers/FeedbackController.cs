@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAll()
         {
-            var feedbacks=await _context.Feedbacks.Select(x=> new {
+            var feedbacks=await _context.Feedbacks.Where(X=>X.IsDelete==false).Select(x=> new {
                 FeedbackID=x.FeedbackID,
                 Title=x.Title,
                 AdminID=x.AdminID
@@ -194,6 +194,21 @@ namespace API.Controllers
             catch(Exception e)
             {
                 return Ok(new { success=false,message=e.ToString()});
+            }
+        }
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var feedback= await _context.Feedbacks.FindAsync(id);
+            feedback.IsDelete=true;
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new{success=true,message="Delete Success!"});
+            }
+            catch
+            {
+                return Ok(new{success=false,message="Delete fail!"});
             }
         }
     }

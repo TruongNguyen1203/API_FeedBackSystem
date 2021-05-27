@@ -1,66 +1,48 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Dtos;
-using API.Extensions;
 using Core.Entities;
-using Core.Entities.Identity;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-    // [Authorize(Roles=Role.Admin)]
     [Route("api/[controller]")]
     public class ModuleController:ControllerBase
     {
         private readonly StoreContext _context;
-        private readonly UserManager<AppUser> _userManager;
-
-        public ModuleController(StoreContext context, UserManager<AppUser> userManager)
+        public ModuleController(StoreContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
         [HttpGet("add")]
-        public IActionResult Add()
+        public async Task<ActionResult> Add()
         {
             //get all admin ID
-            var lstAdminID=_context.Admins
+            var lstAdminID=await _context.Admins
                         .Select(x=> new {
                             AdminID=x.AdminID,
                             AdminUsername=x.AppUser.UserName
-                        }).ToList();
+                        }).ToListAsync();
 
             // get all feedback title
-            var lstFeedbackTitle=_context.Feedbacks
+            var lstFeedbackTitle=await _context.Feedbacks
                                 .Select(x=> new{
                                     FeedbackID=x.FeedbackID,
                                     lstFeedbackTitle=x.Title
-                                }).ToList();
+                                }).ToListAsync();
             return Ok(new{listAdminID=lstAdminID, listFeedbackID=lstFeedbackTitle});
         }
 
         [HttpPost("add")]
-        public  IActionResult Add([FromBody] ModuleDto moduleDto)
+        public  async Task<ActionResult> Add([FromBody] ModuleDto moduleDto)
         {
-            // get current admin if admin = null
-            if(moduleDto.AdminID.Length==0)
-            {
-                var adminID = HttpContext.Session.GetString(SessionKey.Id);
-                
-                moduleDto.AdminID=adminID;
-            }
-            var user =_context.Admins.Include(x=>x.AppUser).Where(x=>x.AdminID==moduleDto.AdminID)
-                        .SingleOrDefault();
+            var user =await _context.Admins.Include(x=>x.AppUser).Where(x=>x.AdminID==moduleDto.AdminID)
+                        .SingleOrDefaultAsync();
 
-
-            var feedback =_context.Feedbacks.Find(moduleDto.FeedbackTitleID);
+            var feedback =await _context.Feedbacks.FindAsync(moduleDto.FeedbackTitleID);
             Module newModule = new Module()
             {
                 Admin=user,
@@ -71,16 +53,24 @@ namespace API.Controllers
                 FeedbackEndTime=moduleDto.FeedbackEndTime,
                 Feedback=feedback
             };
-            _context.Add(newModule);
-            _context.SaveChanges();
-            return Ok(new {success=true,messages="Create Module Successfully"});
+            try
+            {
+                await _context.AddAsync(newModule);
+                await _context.SaveChangesAsync();
+                return Ok(new {success=true,messages="Add Success!"});
+            }
+            catch (Exception)
+            {
+                 return Ok(new {success=false,messages="Add fail!"});
+            }
+            
         }
-        // [Authorize(Roles=Role.Admin)]
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<ActionResult> GetAll()
         {
-            var modules=_context.Modules.Include(x=>x.Admin)
+            var modules=await _context.Modules.Include(x=>x.Admin)
                         .Include(x=>x.Feedback)
+                        .Where(x=>x.IsDelete==false)
                         .Select(x=>new ModuleDto(){
                             ModuleID=x.ModuleID,
                             ModuleName=x.ModuleName,
@@ -91,47 +81,47 @@ namespace API.Controllers
                             FeedbackStartTime=x.FeedbackStartTime,
                             FeedbackEndTime=x.FeedbackEndTime
                         })
-                        .ToList();
+                        .ToListAsync();
             return Ok(modules);
         }
         [HttpGet("{id}")]
-        public IActionResult GetModule(int id)
+        public async Task<ActionResult> GetModule(int id)
         {
-            var module=_context.Modules.Find(id);
+            var module=await _context.Modules.FindAsync(id);
             return Ok(module);
         }
         [HttpGet("update/{id}")]
-        public IActionResult Update(int id)
+        public async Task<ActionResult> Update(int id)
         {
-            var module =_context.Modules.Include(x=>x.Feedback)
+            var module =await _context.Modules.Include(x=>x.Feedback)
                         .Include(x=>x.Admin)
                         .Where(x=>x.ModuleID==id)
-                        .FirstOrDefault();
+                        .FirstOrDefaultAsync();
 
-            var lstAdminID=_context.Admins
+            var lstAdminID=await _context.Admins
                         .Select(x=> new {
                             AdminID=x.AdminID,
                             AdminUsername=x.AppUser.UserName
-                        }).ToList();
+                        }).ToListAsync();
 
-            var lstFeedbackTitle=_context.Feedbacks
+            var lstFeedbackTitle=await _context.Feedbacks
                                 .Select(x=> new{
                                     FeedbackID=x.FeedbackID,
                                     lstFeedbackTitle=x.Title
-                                }).ToList();
+                                }).ToListAsync();
 
             return Ok(new {module=true,listAdminID=lstAdminID,listFeedbackTitle=lstFeedbackTitle});
         }
 
         [HttpPut("update")]
-        public IActionResult Update([FromBody] ModuleDto moduleDto)
+        public async Task<ActionResult> Update([FromBody] ModuleDto moduleDto)
         {
-            var user=_context.Admins.Include(x=>x.AppUser)
+            var user=await _context.Admins.Include(x=>x.AppUser)
                             .Where(x=>x.AdminID==moduleDto.AdminID)
-                            .FirstOrDefault();
-            var feedback=_context.Feedbacks.Find(moduleDto.FeedbackTitleID);
+                            .FirstOrDefaultAsync();
+            var feedback=await _context.Feedbacks.FindAsync(moduleDto.FeedbackTitleID);
 
-            var module=_context.Modules.Where(x=>x.ModuleID==moduleDto.ModuleID)
+            var module=await _context.Modules.Where(x=>x.ModuleID==moduleDto.ModuleID)
                         .Select(x=>new Module(){
                             ModuleID=x.ModuleID,
                             ModuleName=moduleDto.ModuleName,
@@ -141,19 +131,39 @@ namespace API.Controllers
                             Admin=user,
                             FeedbackStartTime=moduleDto.FeedbackStartTime,
                             FeedbackEndTime=moduleDto.FeedbackEndTime
-                        }).FirstOrDefault();
-            _context.Modules.Update(module);
-            _context.SaveChanges();
-            return Ok(new {success=true, message="Update Success!"});
+                        }).FirstOrDefaultAsync();
+            // await _context.Modules.Update(module);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new {success=true, message="Update Success!"});
+            }
+            catch(Exception)
+            {
+                 return Ok(new {success=false, message="Update fail!"});
+            }
         }
 
-        // [Authorize(Roles=Role.Trainer)]
-        [HttpGet("trainer")]
-        public IActionResult GetAllForTrainer()
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
         {
-            string trainerID=HttpContext.Session.GetString(SessionKey.Id);
-            var assignment=_context.Assignments.Include(x=>x.Module)
-                            .Where(x=>x.TrainerID==trainerID)
+            try
+            {
+                var module = await _context.Modules.FindAsync(id);
+                module.IsDelete=true;
+                await _context.SaveChangesAsync();
+                return Ok(new{success=true, message="Update Success!"});
+            }
+            catch(Exception)
+            {
+                return Ok(new {success=false,message="Update fail!"});
+            }
+        }
+        [HttpGet("trainer")]
+        public async Task<ActionResult> GetAllForTrainer(string trainerID)
+        {
+            var assignment=await _context.Assignments.Include(x=>x.Module)
+                            .Where(x=>x.TrainerID==trainerID && x.Module.IsDelete==false)
                             .Select(x=> new{
                                 ModuleID=x.ModuleID,
                                 ModuleName=x.Module.ModuleName,
@@ -163,8 +173,21 @@ namespace API.Controllers
                                 FeedbackTitle=x.Module.Feedback.Title,
                                 FeedbackStartTime=x.Module.FeedbackStartTime,
                                 FeedbackEndTime=x.Module.FeedbackEndTime
-                            }).ToList();
+                            }).ToListAsync();
             return Ok(assignment);
         }
+        [HttpGet("trainee")]
+        public async Task<ActionResult> GetAllForTrainee(string traineeID)
+        {
+            // var listModule=await _context.Assignments.Where(x=>x.Class.Enrollments.==traineeID).Select(x=>x.ClassID).ToListAsync();
+
+            // var modules= await _context.Modules.Join(listModule,x=>x.)
+            // var modules=_context.Assignments.Include(x=>x.Module).Include(x=>x.Class)
+            //                                 .Join(_context.Trainee_Assignments,x=>x.Class.,y=>y.)
+                                            
+            return Ok();
+
+                                                    
+        }
     }
-}
+}   
