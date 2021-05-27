@@ -31,10 +31,12 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetClasses(string role, string userId)
+        public async Task<ActionResult> GetClasses()
         {
             try
             {
+                var role = HttpContext.Session.GetString(SessionKey.Role);
+                var userId = HttpContext.Session.GetString(SessionKey.Id);
                 switch (role)
                 {
                     case Role.Admin:
@@ -84,11 +86,13 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("detail")]
-        public async Task<ActionResult> GetClass(int id,string role, string userId)
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult> GetClass(int id)
         {
             try
             {
+                var role = HttpContext.Session.GetString(SessionKey.Role);
+                var userId = HttpContext.Session.GetString(SessionKey.Id);
                 var result = await _classtRepo.GetClassById(id);
 
                 if (result == null) return NotFound();
@@ -97,19 +101,12 @@ namespace API.Controllers
                     case Role.Admin:
                         return Ok(result);
 
-                    case Role.Trainer: 
-                        // var @class = await _context.Classes.Include(c => c.Enrollments)
-                        //                                     .ThenInclude(c => c.Trainee)
-                        //                                     .ThenInclude(c => c.AppUser)
-                        //                                     .FirstOrDefaultAsync(c => c.ClassID == id);
-                        var @class =await _context.Assignments.Include(x=>x.Class).ThenInclude(x=>x.Enrollments)
-                                                        .Include(x=>x.Trainer)
-                                                        .Where(x=>x.TrainerID==userId)
-                                                        .FirstOrDefaultAsync(c => c.ClassID == id);
-                        if(@class==null)
-                        {
-                            return NoContent();
-                        }
+                    case Role.Trainer: case Role.Trainee:
+                        var @class = await _context.Classes.Include(c => c.Enrollments)
+                                                            .ThenInclude(c => c.Trainee)
+                                                            .ThenInclude(c => c.AppUser)
+                                                            .FirstOrDefaultAsync(c => c.ClassID == id);
+
                         TraineeListVM trainees = new TraineeListVM();
                         trainees.ClassId = result.ClassID;
                         trainees.ClassName = result.ClassName;
@@ -117,7 +114,7 @@ namespace API.Controllers
 
                         int count = 1;
 
-                        foreach (var e in @class.Class.Enrollments)
+                        foreach (var e in @class.Enrollments)
                         {
                             TraineeVM tempTrainee = new TraineeVM();
                             tempTrainee.Number = count++;
@@ -128,24 +125,7 @@ namespace API.Controllers
                         }
                         trainees.TraineeList = listTrainees;
                         return Ok(trainees);
-                    // Y SUA CODE THANH CAI NAY
-                    // case Role.Trainee:
-                                       
-                    //     var @classTrainee =await _context.Classes
-                    //                                     .Include(x=>x.Trainee)
-                    //                                     .Where(x=>x.TraineeID==userId && x.ClassID == id)
-                    //                                     .GroupBy(x=> new{x.ClassID,x.Class.ClassName})
-                    //                                     .Select(x=> new{
-                    //                                         ClassID=x.Key.ClassID,
-                    //                                         ClassName=x.Key.ClassName,
-                    //                                         NumberofTrainee=x.Count()
-                    //                                     })
-                    //                                     .FirstOrDefaultAsync();
-                    //     if(results==null)
-                    //     {
-                    //         return NoContent();
-                    //     }
-                    //     return Ok(results);
+
                     default:
                         return Unauthorized();
 
