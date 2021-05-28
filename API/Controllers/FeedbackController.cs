@@ -35,7 +35,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> GetFeedback(int id)
         {
-            var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id).Select(x=> new{ 
+            var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id &&x.IsDelete==false).Select(x=> new{ 
                                            FeedbackTitle=x.Title,
                                            AdminID=x.AdminID             
                                         }).FirstOrDefaultAsync();
@@ -43,7 +43,8 @@ namespace API.Controllers
             var allTopic= await _context.Topics.Select(x=>x.TopicName).ToListAsync();
             foreach(var item in allTopic)
             {
-                feedback.Add(item,await _context.Feedback_Questions.Where(x=>x.FeedbackID==id &&x.Question.Topic.TopicName==item)
+                feedback.Add(item,await _context.Feedback_Questions.Where(x=>x.FeedbackID==id &&x.Question.Topic.TopicName==item
+                                                && x.Feedback.IsDelete==false && x.Question.IsDeleted==false)
                                                 .Select(x=>x.Question.QuestionContent).ToListAsync());
             }
             return Ok(new{feedbackTitle=info.FeedbackTitle,adminID=info.AdminID,content=feedback});
@@ -51,19 +52,25 @@ namespace API.Controllers
         [HttpGet("add")]
         public async Task<ActionResult> Add()
         {
-            // get all typefeedbacks
-            var typeFbs =await _context.TypeFeedbacks.ToListAsync();
+            Dictionary<string,List<QuestionDto>> feedback = new Dictionary<string, List<QuestionDto>>();
+            var allTopic= await _context.Topics.Select(x=>x.TopicName).ToListAsync();
+            foreach(var item in allTopic)
+            {
+                feedback.Add(item, await _context.Questions.Where(x=>x.IsDeleted==false && x.Topic.TopicName==item)
+                                                    .Select(x=> new QuestionDto(){
+                                                    QuestionID=x.QuestionID,
+                                                    QuestionContent=x.QuestionContent,
+                                                    TopicID=x.TopicID
+                                                }).ToListAsync());
+            }
 
-            // get list topic with its question
-            var topic=await _context.Topics.Include(x=>x.Questions).Distinct().ToListAsync();
-
-            return Ok(new {TypeFeedbacks=typeFbs,topic=topic});
+            return Ok(new {feedback});
         }
         [HttpPost("add")]
         public async Task<ActionResult> Add([FromBody] FeedbackDto feedbackDto)
         {
             //check existed title
-            var existed=await _context.Feedbacks.Where(x=>x.Title==feedbackDto.Title).FirstOrDefaultAsync();
+            var existed=await _context.Feedbacks.Where(x=>x.Title==feedbackDto.Title &&x.IsDelete==false).FirstOrDefaultAsync();
             if(existed!=null)
             {
                 return Ok(new {success=false,message="Add failed! Feedback existed!"});
@@ -73,7 +80,7 @@ namespace API.Controllers
             foreach(var q in feedbackDto.lstQuestionID)
             {
                 lstQuestion.Add(_context.Questions.Include(x=>x.Topic)
-                            .Where(x=>x.QuestionID==q)
+                            .Where(x=>x.QuestionID==q && x.IsDeleted==false)
                             .FirstOrDefault());
             }
             // have to choose at least 1 question per topic
@@ -124,12 +131,35 @@ namespace API.Controllers
                 return Ok(new {success=false,message=e.Message.ToString()});
             }
         }
-        
+        [HttpGet("update/{id}")]
+        public async Task<ActionResult> Update(int id)
+        {
+            var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id &&x.IsDelete==false).Select(x=> new{ 
+                                           FeedbackID=x.FeedbackID,
+                                           FeedbackTitle=x.Title,
+                                           AdminID=x.AdminID             
+                                        }).FirstOrDefaultAsync();
+            var allTopic= await _context.Topics.Select(x=>x.TopicName).ToListAsync();
+            // return list question id of feedback
+            var oldQuestion =await _context.Feedback_Questions.Where(x=>x.FeedbackID==id && x.Question.IsDeleted==false)
+                                                                .Select(x=>x.QuestionID).ToListAsync();
+            Dictionary<string,List<QuestionDto>> listFeedback = new Dictionary<string, List<QuestionDto>>();
+            foreach(var item in allTopic)
+            {
+                listFeedback.Add(item, await _context.Questions.Where(x=>x.IsDeleted==false && x.Topic.TopicName==item)
+                                                    .Select(x=> new QuestionDto(){
+                                                    QuestionID=x.QuestionID,
+                                                    QuestionContent=x.QuestionContent,
+                                                    TopicID=x.TopicID
+                                                }).ToListAsync());
+            }
+            return Ok(new {info,oldQuestion,listFeedback});
+        }
         [HttpPut("update")]
         public async Task<ActionResult> Update([FromBody] FeedbackDto feedbackDto)
         {
             // check exist name
-            var exist =await _context.Feedbacks.Where(x=>x.FeedbackID!=feedbackDto.ID && x.Title==feedbackDto.Title)
+            var exist =await _context.Feedbacks.Where(x=>x.FeedbackID!=feedbackDto.ID &&x.IsDelete==false && x.Title==feedbackDto.Title)
                         .FirstOrDefaultAsync();
             if(exist!=null)
             {
