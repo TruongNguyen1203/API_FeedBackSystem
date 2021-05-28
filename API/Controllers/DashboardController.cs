@@ -41,18 +41,18 @@ namespace API.Controllers
                                                 ModuleID=x.Module.ModuleID,
                                                 ModuleName=x.Module.ModuleName,
                                                 EndTime=x.Module.EndTime.ToString("MM/dd/yyyy HH:mm"),
-                                                StatusCode=x.Module.EndTime>DateTime.Now?"Complete":"InComplete"
+                                                StatusCode="InComplete"
                                             }).ToListAsync();
              // ====> get feedback which was not completed
             // => query where Answer has traineeID==.. && moduleID== ... => FEEDBACK COMPLETE
             var listComplete=feedbacks.Join(_context.Answers,x=>x.ModuleID,y=>y.ModuleID,
                                         (x,y)=> new{
-                                            ClassID=x.ClassID,
-                                            ModuleID=x.ModuleID,
                                             FeedbackID=x.FeedbackID,
                                             TraineeID=y.TraineeID
                                         })
-                                        .ToList();
+                                        .Where(x=>x.TraineeID==traineeID)
+                                        .Select(x=>x.FeedbackID)
+                                        .Distinct().ToList();
             return Ok(new {listFeedback=feedbacks,listComplete=listComplete});
         }
         [HttpGet("{id}")]
@@ -87,7 +87,8 @@ namespace API.Controllers
                 // add comment
                 if(comment!=null)
                 {
-                    
+                    //check exist comment
+                   
                     Trainee_Comment newComment = new Trainee_Comment()
                     {
                         ClassID=classOfTrainee.ClassID,
@@ -99,6 +100,7 @@ namespace API.Controllers
                     await _context.SaveChangesAsync();
                 }   
                 // add answer
+             
                 List<Answer> newAnswer= new List<Answer>(); 
                 foreach (var item in answerDto)
                 {
