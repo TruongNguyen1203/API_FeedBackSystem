@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Dtos;
 using Core.Entities;
 using Core.Interfaces;
 using Infrastructure.Data;
@@ -118,36 +119,54 @@ namespace API.Controllers
 
 
         //Edit assignment
-        [HttpPut("{moduleId}/{classId}/{trainerId}")]
-        public IActionResult UpdateAssignment(int moduleId, int classId, string trainerId, Assignment assignment)
+        [HttpPut("update/{oldTrainerId}")]
+        public IActionResult UpdateAssignment([FromBody] AssignmentDto assignmentDto, string oldTrainerId)
         {
             try
             {
-                if (moduleId != assignment.ModuleID && classId != assignment.ClassID)
-                    return BadRequest("moduleId, classId, trainerId mismatch");
+                var deleted = _context.Assignments.Where(x => x.ClassID == assignmentDto.ClassID && x.ModuleID == assignmentDto.ModuleID && x.TrainerID == oldTrainerId).FirstOrDefault();
 
-                //var result = await _assignRepo.UpdateAssignment(assignment);
-                // var result = _context.Assignments.Include(a => a.Module)
-                //                                    .Include(a => a.Class)
-                //                                    .Include(a => a.Trainer)
-                //                                    .ThenInclude(a => a.AppUser)
-                //                                    .FirstOrDefaultAsync(a => a.ClassID == assignment.ClassID
-                //                                                            && a.ModuleID == assignment.ModuleID
-                //                                                           );
-                var trainer = _context.Trainers.Include(a => a.AppUser).Where(t => t.TrainerID == assignment.TrainerID).SingleOrDefault();
-                assignment.Trainer = trainer;
-
-                _context.Assignments.Update(assignment);
+                _context.Assignments.Remove(deleted);
                 _context.SaveChanges();
 
+                //get trainer change
 
-                //return Ok(assignment);
-                return Ok(new { success = true, message = "Update assignment success!" });
+                var newTrainer = _context.Trainers.FirstOrDefault(c => c.TrainerID == assignmentDto.TrainerID);
+
+                Assignment newAssignment = new Assignment();
+                newAssignment.ClassID = assignmentDto.ClassID;
+                newAssignment.ModuleID = assignmentDto.ModuleID;
+                newAssignment.TrainerID = assignmentDto.TrainerID;
+                newAssignment.RegistrationCode = deleted.RegistrationCode;
+
+                _context.Assignments.Add(newAssignment);
+                _context.SaveChanges();
+                return Ok(new { success = true, message = "Update enrollment success!" });
+
             }
-            catch (Exception)
+            catch
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error updating data");
+                return Ok(new { success = false, message = "Update enrollment fail!" });
+            }
+
+        }
+
+
+         [HttpDelete("{ClassId}/{ModuleId}/{TrainerId}")]
+        public IActionResult Delete(int ClassId, int ModuleId, string TrainerId )
+        {
+            try
+            {
+                var assignment= _context.Assignments.Where(x => x.ClassID == ClassId && x.ModuleID == ModuleId && x.TrainerID == TrainerId).FirstOrDefault();
+                
+                _context.Assignments.Remove(assignment);
+     
+                 _context.SaveChanges();
+                return Ok(new {success=true,message="Delete Success!"});
+            }
+            catch(Exception)
+            {
+                 return Ok(new {success=false,message="Delete fail!"});
             }
         }
 
