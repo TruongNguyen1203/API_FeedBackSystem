@@ -9,10 +9,9 @@ namespace Core.Interfaces
        // Task<IEnumerable<Assignment>> GetAssignments();
         Task<Assignment> GetAssignment(int moduleId, int classId, string trainerId);
         Task<Assignment> AddAssignment(Assignment assignment);
-        Task<Assignment> UpdateAssignment(Assignment assignment);
-        Task<Assignment> DeleteAssigment(int moduleId, int classId, string trainerId);
 
         Task<IEnumerable<object>>  SearchAssignments(string inputText);
+        Task<IEnumerable<object>>  SearchAssignmentsByTrainer(string trainerId, string inputText);
 
         
 

@@ -25,6 +25,56 @@ namespace API.Controllers
             _context = context;
         }
 
+        //trainer get his assignment
+        [HttpGet("trainer/{trainerId}")]
+        public IActionResult GetAssignmentsByTrainer(string trainerId)
+        {
+            try
+            {
+                var data = _context.Assignments.Where(a => a.TrainerID == trainerId).Include(a => a.Class)
+                                                    .Include(a => a.Module)
+                                                    .Include(a => a.Trainer)
+                                                    .ThenInclude(a => a.AppUser)
+                                                    .Select(x => new
+                                                    {
+                                                        moduleName = x.Module.ModuleName,
+                                                        className = x.Class.ClassName,
+                                                        trainerName = x.Trainer.AppUser.UserName,
+                                                        registrationCode = x.RegistrationCode,
+                                                    })
+                                                    .ToList();
+                return Ok(data);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+        //trainer search
+        [HttpGet("trainer/{trainerId}/{inputText}")]
+        public async Task<ActionResult<IEnumerable<Assignment>>> SearchByTrainer(string trainerId, string inputText)
+        {
+            try
+            {
+                var result = await _assignRepo.SearchAssignmentsByTrainer(trainerId,inputText);
+
+                if (result.Any())
+                {
+                    return Ok(result);
+                }
+
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+
+        }
+
+
         //Get all assignment
         [HttpGet]
         public IActionResult GetAssignments()
@@ -71,7 +121,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("{search}")]
+        [HttpGet("{inputText}")]
         public async Task<ActionResult<IEnumerable<Assignment>>> Search(string inputText)
         {
             try
@@ -152,21 +202,21 @@ namespace API.Controllers
         }
 
 
-         [HttpDelete("{ClassId}/{ModuleId}/{TrainerId}")]
-        public IActionResult Delete(int ClassId, int ModuleId, string TrainerId )
+        [HttpDelete("{ClassId}/{ModuleId}/{TrainerId}")]
+        public IActionResult Delete(int ClassId, int ModuleId, string TrainerId)
         {
             try
             {
-                var assignment= _context.Assignments.Where(x => x.ClassID == ClassId && x.ModuleID == ModuleId && x.TrainerID == TrainerId).FirstOrDefault();
-                
+                var assignment = _context.Assignments.Where(x => x.ClassID == ClassId && x.ModuleID == ModuleId && x.TrainerID == TrainerId).FirstOrDefault();
+
                 _context.Assignments.Remove(assignment);
-     
-                 _context.SaveChanges();
-                return Ok(new {success=true,message="Delete Success!"});
+
+                _context.SaveChanges();
+                return Ok(new { success = true, message = "Delete Success!" });
             }
-            catch(Exception)
+            catch (Exception)
             {
-                 return Ok(new {success=false,message="Delete fail!"});
+                return Ok(new { success = false, message = "Delete fail!" });
             }
         }
 
