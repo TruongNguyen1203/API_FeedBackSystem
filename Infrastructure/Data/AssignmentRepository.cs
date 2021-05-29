@@ -30,7 +30,7 @@ namespace Infrastructure.Data
         }
 
         // Get a assignment
-        public async Task<Assignment> GetAssignment(int moduleId, int classId, string trainerId)
+        public async Task<Assignment> GetAssignment(int moduleId, int classId, string trainerName)
         {
             return await _context.Assignments.Include(a => a.Class)
                                                 .Include(a => a.Module)
@@ -38,7 +38,7 @@ namespace Infrastructure.Data
                                                 .ThenInclude(a => a.AppUser)
                                                 .FirstOrDefaultAsync(a => a.ClassID == classId
                                                                            && a.ModuleID == moduleId
-                                                                           && a.TrainerID == trainerId);
+                                                                           && a.Trainer.AppUser.UserName == trainerName);
         }
 
 
@@ -70,7 +70,7 @@ namespace Infrastructure.Data
                                                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<object>> SearchAssignmentsByTrainer(string trainerId, string inputText)
+        public async Task<IEnumerable<object>> SearchAssignmentsByTrainer(string trainerName, string inputText)
         {
             IQueryable<Assignment> query = _context.Assignments.Include(a => a.Class)
                                                                 .Include(a => a.Module)
@@ -78,7 +78,7 @@ namespace Infrastructure.Data
                                                                 .ThenInclude(a => a.AppUser);
             if (!string.IsNullOrEmpty(inputText))
             {
-                query = query.Where(a => a.TrainerID == trainerId && (a.Module.ModuleName.Contains(inputText)
+                query = query.Where(a => a.Trainer.AppUser.UserName == trainerName && (a.Module.ModuleName.Contains(inputText)
                                                                         || a.Class.ClassName.Contains(inputText)
                                                                         || a.Trainer.AppUser.UserName.Contains(inputText)
                                                                         || a.RegistrationCode.Contains(inputText)));

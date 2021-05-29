@@ -20,6 +20,7 @@ namespace Infrastructure.Data
 
         public async Task<Class> AddClass(Class @class)
         {
+           
             var result = await _context.Classes.AddAsync(@class);
             await _context.SaveChangesAsync();
             return result.Entity;
@@ -42,6 +43,11 @@ namespace Infrastructure.Data
         public async Task<Class> GetClassById(int id)
         {
             return await _context.Classes.FirstOrDefaultAsync(c => c.ClassID == id);
+        }
+
+        public async Task<Class> GetClassByName(string className)
+        {
+            return await _context.Classes.FirstOrDefaultAsync(c => c.ClassName == className);
         }
 
         public async Task<IEnumerable<object>> GetClasses()

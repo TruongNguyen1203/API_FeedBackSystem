@@ -56,15 +56,15 @@ namespace API.Controllers
                             classList.Add(classTemp);
                         }
                         return Ok(classList);
-                    
+
                     case Role.Trainee:
                         var enrollments = _context.Enrollments.Include(a => a.Class)
                                                                 .Where(a => a.TraineeID == userId)
                                                                 .ToList();
-                                                                
+
                         List<ClassListByTrainee> classListByTrainees = new List<ClassListByTrainee>();
 
-                        foreach(var e in enrollments)
+                        foreach (var e in enrollments)
                         {
                             ClassListByTrainee temp = new ClassListByTrainee();
                             temp.ClassID = e.ClassID;
@@ -85,7 +85,7 @@ namespace API.Controllers
         }
 
         [HttpGet("detail")]
-        public async Task<ActionResult> GetClass(int id,string role, string userId)
+        public async Task<ActionResult> GetClass(int id, string role, string userId)
         {
             try
             {
@@ -98,7 +98,8 @@ namespace API.Controllers
                     case Role.Admin:
                         return Ok(result);
 
-                    case Role.Trainer: case Role.Trainee:
+                    case Role.Trainer:
+                    case Role.Trainee:
                         var @class = await _context.Classes.Include(c => c.Enrollments)
                                                             .ThenInclude(c => c.Trainee)
                                                             .ThenInclude(c => c.AppUser)
@@ -142,11 +143,17 @@ namespace API.Controllers
             try
             {
                 if (@class == null)
-                    return Ok(new {success=false, message="Add class false!"});
+                    return Ok(new { success = false, message = "Add class false!" });
 
+                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName).FirstOrDefault();
+                //neu ton tai ten class do -> ko add
+                if (checkClass != null)
+                {
+                     return Ok(new { success = false, message = "Class name is already existed!" });
+                }
                 var createdClass = await _classtRepo.AddClass(@class);
 
-                return Ok(new {success=true, message="Add class success!"});
+                return Ok(new { success = true, message = "Add class success!" });
             }
             catch (Exception)
             {
@@ -161,14 +168,21 @@ namespace API.Controllers
         {
             try
             {
-           
+
                 var classToUpdate = await _classtRepo.GetClassById(@class.ClassID);
 
                 if (classToUpdate == null)
                     return NotFound($"Class not found");
 
+                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName).FirstOrDefault();
+                //neu ton tai ten class do -> ko add
+                if (checkClass != null)
+                {
+                     return Ok(new { success = false, message = "Class name is already existed!" });
+                }
+
                 await _classtRepo.UpdateClass(@class);
-                return Ok(new {success=true, message="Update class success!"}); 
+                return Ok(new { success = true, message = "Update class success!" });
             }
             catch (Exception)
             {
@@ -191,7 +205,7 @@ namespace API.Controllers
                 }
 
                 await _classtRepo.DeleteClass(id);
-                return Ok(new {success=true, message="Delete class success!"}); 
+                return Ok(new { success = true, message = "Delete class success!" });
             }
             catch (Exception)
             {
@@ -202,17 +216,19 @@ namespace API.Controllers
         [HttpGet("update")]
         public async Task<ActionResult> GetDetail(int id, string role, string userId)
         {
-            if(role!=Role.Admin)
+           
+            if (role != Role.Admin)
             {
                 return Unauthorized();
             }
-            var temp=await _context.Classes.Where(x=>x.ClassID==id)
-                                                    .Select(x=>new{
-                                                        ClassID=x.ClassID,
-                                                        ClassName=x.ClassName,
-                                                        Capacity=x.Capacity,
-                                                        StartDate=x.StartTime,
-                                                        EndDate=x.EndTime
+            var temp = await _context.Classes.Where(x => x.ClassID == id)
+                                                    .Select(x => new
+                                                    {
+                                                        ClassID = x.ClassID,
+                                                        ClassName = x.ClassName,
+                                                        Capacity = x.Capacity,
+                                                        StartDate = x.StartTime,
+                                                        EndDate = x.EndTime
                                                     }).FirstOrDefaultAsync();
             return Ok(temp);
         }

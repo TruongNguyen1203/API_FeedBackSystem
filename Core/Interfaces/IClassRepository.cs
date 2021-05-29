@@ -8,6 +8,7 @@ namespace Core.Interfaces
     {
         Task<IEnumerable<object>> GetClasses();
         Task<Class> GetClassById(int id);
+        Task<Class> GetClassByName(string className);
         Task<Class> AddClass(Class @class);
         Task<Class> UpdateClass(Class @class);
         Task<Class> DeleteClass(int Id);

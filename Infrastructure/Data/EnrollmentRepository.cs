@@ -43,9 +43,11 @@ namespace Infrastructure.Data
                             .FirstOrDefaultAsync(c => c.ClassID == classId && c.TraineeID == traineeId);
         }
 
-        public async Task<IEnumerable<object>> GetEnrollments()
+        public async Task<IEnumerable<object>> GetEnrollments(string className)
         {
-            return (IEnumerable<object>)await _context.Enrollments.Select(x=> new {
+            if(className == "All" || className =="all")
+            {
+                return (IEnumerable<object>)await _context.Enrollments.Select(x=> new {
                                                     traineeId=x.TraineeID,
                                                     TraineeUserName=x.Trainee.AppUser.UserName,
                                                     TraineeName=x.Trainee.AppUser.Name,
@@ -53,6 +55,19 @@ namespace Infrastructure.Data
                                                     ClassName=x.Class.ClassName
                                                 })
                                                 .ToListAsync();
+            }
+            else
+            {
+            return (IEnumerable<object>)await _context.Enrollments.Where(e => e.Class.ClassName == className).Select(x=> new {
+                                                    traineeId=x.TraineeID,
+                                                    TraineeUserName=x.Trainee.AppUser.UserName,
+                                                    TraineeName=x.Trainee.AppUser.Name,
+                                                    classId=x.ClassID,
+                                                    ClassName=x.Class.ClassName
+                                                })
+                                                .ToListAsync();
+            }
+            
         }
 
         public Task<Enrollment> UpdateEnrollment(Enrollment enrollment)

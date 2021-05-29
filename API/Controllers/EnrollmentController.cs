@@ -27,12 +27,12 @@ namespace API.Controllers
               _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> GetEnrollments()
+        [HttpGet("{className}")]
+        public async Task<ActionResult> GetEnrollments(string className)
         {
             try
             {
-                return Ok(await _enrollmentRepo.GetEnrollments());
+                return Ok(await _enrollmentRepo.GetEnrollments(className));
             }
             catch (Exception)
             {
@@ -76,19 +76,19 @@ namespace API.Controllers
         }
 
 
-       [HttpPut("{update}/{oldClassId}")]
-        public IActionResult Update([FromBody]EnrollmentDto enrollmentDto, int oldClassId)
+       [HttpPut("update/{oldClassId}/{oldTraineeId}")]
+        public IActionResult Update([FromBody]EnrollmentDto enrollmentDto, int oldClassId, string oldTraineeId)
         {
-            var deleted = _context.Enrollments.Where(x => x.ClassID == oldClassId && x.TraineeID == enrollmentDto.TraineeID).FirstOrDefault();
+            var deleted = _context.Enrollments.Where(x => x.ClassID == oldClassId && x.TraineeID == oldTraineeId).FirstOrDefault();
 
             _context.Enrollments.Remove(deleted);
             _context.SaveChanges();
-            //get class change
 
-            Class newClass = _context.Classes.FirstOrDefault(c => c.ClassID == enrollmentDto.ClassId);
+            //get class change
+            Class newClass = _context.Classes.FirstOrDefault(c => c.ClassName == enrollmentDto.ClassName);
                                     
             Enrollment newEnrollment = new Enrollment();
-            newEnrollment.ClassID = enrollmentDto.ClassId;
+            newEnrollment.ClassID = newClass.ClassID;
             newEnrollment.TraineeID = enrollmentDto.TraineeID;
 
              _context.Enrollments.Add(newEnrollment);

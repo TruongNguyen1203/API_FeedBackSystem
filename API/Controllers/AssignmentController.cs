@@ -26,12 +26,12 @@ namespace API.Controllers
         }
 
         //trainer get his assignment
-        [HttpGet("trainer/{trainerId}")]
-        public IActionResult GetAssignmentsByTrainer(string trainerId)
+        [HttpGet("trainer/{trainerName}")]
+        public IActionResult GetAssignmentsByTrainer(string trainerName)
         {
             try
             {
-                var data = _context.Assignments.Where(a => a.TrainerID == trainerId).Include(a => a.Class)
+                var data = _context.Assignments.Where(a => a.Trainer.AppUser.UserName == trainerName).Include(a => a.Class)
                                                     .Include(a => a.Module)
                                                     .Include(a => a.Trainer)
                                                     .ThenInclude(a => a.AppUser)
@@ -55,12 +55,12 @@ namespace API.Controllers
             }
         }
         //trainer search
-        [HttpGet("trainer/{trainerId}/{inputText}")]
-        public async Task<ActionResult<IEnumerable<Assignment>>> SearchByTrainer(string trainerId, string inputText)
+        [HttpGet("trainer/{trainerName}/{inputText}")]
+        public async Task<ActionResult<IEnumerable<Assignment>>> SearchByTrainer(string trainerName, string inputText)
         {
             try
             {
-                var result = await _assignRepo.SearchAssignmentsByTrainer(trainerId,inputText);
+                var result = await _assignRepo.SearchAssignmentsByTrainer(trainerName,inputText);
 
                 if (result.Any())
                 {
@@ -107,14 +107,26 @@ namespace API.Controllers
                     "Error retrieving data from the database");
             }
         }
+        [HttpGet("getId/{moduleName}/{className}")]
+         public IActionResult GetModuleClassId(string moduleName, string className)
+         {
+             var clas = _context.Classes.Where(c => c.ClassName == className).FirstOrDefault();
+             var module = _context.Modules.Where(c => c.ModuleName == moduleName).FirstOrDefault();
+             AssignmentDto assignmentDto = new AssignmentDto();
+             assignmentDto.ClassID = clas.ClassID;
+             assignmentDto.ModuleID = module.ModuleID;
+             assignmentDto.TrainerName = "noname";
+             return Ok(assignmentDto);
+
+         }
 
         //multiple parameter
-        [HttpGet("{moduleId}/{classId}/{trainerId}")]
-        public async Task<IActionResult> GetAssignment(int moduleId, int classId, string trainerId)
+        [HttpGet("{moduleId}/{classId}/{trainerName}")]
+        public async Task<IActionResult> GetAssignment(int moduleId, int classId, string trainerName)
         {
             try
             {
-                var result = await _assignRepo.GetAssignment(moduleId, classId, trainerId);
+                var result = await _assignRepo.GetAssignment(moduleId, classId, trainerName);
 
                 if (result == null) return NotFound();
 
@@ -175,24 +187,24 @@ namespace API.Controllers
 
 
         //Edit assignment
-        [HttpPut("update/{oldTrainerId}")]
-        public IActionResult UpdateAssignment([FromBody] AssignmentDto assignmentDto, string oldTrainerId)
+        [HttpPut("update/{oldTrainerName}")]
+        public IActionResult UpdateAssignment([FromBody] AssignmentDto assignmentDto, string oldTrainerName)
         {
             try
             {
-                var deleted = _context.Assignments.Where(x => x.ClassID == assignmentDto.ClassID && x.ModuleID == assignmentDto.ModuleID && x.TrainerID == oldTrainerId).FirstOrDefault();
+                var deleted = _context.Assignments.Where(x => x.ClassID == assignmentDto.ClassID && x.ModuleID == assignmentDto.ModuleID && x.Trainer.AppUser.UserName == oldTrainerName).FirstOrDefault();
 
                 _context.Assignments.Remove(deleted);
                 _context.SaveChanges();
 
                 //get trainer change
 
-                var newTrainer = _context.Trainers.FirstOrDefault(c => c.TrainerID == assignmentDto.TrainerID);
+                var newTrainer = _context.Trainers.FirstOrDefault(c => c.AppUser.UserName == assignmentDto.TrainerName);
 
                 Assignment newAssignment = new Assignment();
                 newAssignment.ClassID = assignmentDto.ClassID;
                 newAssignment.ModuleID = assignmentDto.ModuleID;
-                newAssignment.TrainerID = assignmentDto.TrainerID;
+                newAssignment.TrainerID = newTrainer.TrainerID;
                 newAssignment.RegistrationCode = deleted.RegistrationCode;
 
                 _context.Assignments.Add(newAssignment);
@@ -208,12 +220,15 @@ namespace API.Controllers
         }
 
 
-        [HttpDelete("{ClassId}/{ModuleId}/{TrainerId}")]
-        public IActionResult Delete(int ClassId, int ModuleId, string TrainerId)
+        [HttpDelete("{ClassId}/{ModuleId}/{TrainerName}")]
+        public IActionResult Delete(int ClassId, int ModuleId, string TrainerName)
         {
             try
             {
-                var assignment = _context.Assignments.Where(x => x.ClassID == ClassId && x.ModuleID == ModuleId && x.TrainerID == TrainerId).FirstOrDefault();
+                //get trainer change
+
+                var newTrainer = _context.Trainers.FirstOrDefault(c => c.AppUser.UserName == TrainerName);
+                var assignment = _context.Assignments.Where(x => x.ClassID == ClassId && x.ModuleID == ModuleId && x.TrainerID == newTrainer.TrainerID).FirstOrDefault();
 
                 _context.Assignments.Remove(assignment);
 
