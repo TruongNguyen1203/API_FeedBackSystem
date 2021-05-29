@@ -26,7 +26,8 @@ namespace API.Controllers
         public async Task<ActionResult> Add([FromBody]QuestionDto questionDto)
         {
             // check exist question
-            var exist=await _context.Questions.Where(x=>x.TopicID==questionDto.TopicID && x.QuestionContent.Trim()==questionDto.QuestionContent.Trim())
+            var exist=await _context.Questions.Where(x=>x.TopicID==questionDto.TopicID 
+                                        &&x.IsDeleted==false && x.QuestionContent.Trim()==questionDto.QuestionContent.Trim())
                                         .FirstOrDefaultAsync();
             if(exist!=null)
             {
@@ -67,7 +68,7 @@ namespace API.Controllers
         public async Task<ActionResult> Update(int questionID, string questionContent)
         {
             //check existed question
-            var existed =await _context.Questions.Where(x=>x.QuestionID!=questionID && x.QuestionContent==questionContent)
+            var existed =await _context.Questions.Where(x=>x.QuestionID!=questionID &&x.IsDeleted==false && x.QuestionContent==questionContent)
                                             .ToListAsync();
             if(existed.Count()>0)
             {

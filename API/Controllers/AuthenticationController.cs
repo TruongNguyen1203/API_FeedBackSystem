@@ -137,7 +137,12 @@ namespace API.Controllers
             var user = await userManager.FindByNameAsync(model.UserName);
             if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
             {
+                // check correct role
                 var userRoles = await userManager.GetRolesAsync(user);
+                if(userRoles[0]!=model.Role)
+                {
+                    return Ok(new {success=false,message="Wrong role!"});
+                }
                 var authClaim = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name,user.UserName),
