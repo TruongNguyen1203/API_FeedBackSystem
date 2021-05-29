@@ -67,40 +67,29 @@ namespace Infrastructure.Data
                                                 .ToListAsync();
         }
 
-        //Update assignment
-        public async Task<Assignment> UpdateAssignment(Assignment assignment)
+        public async Task<IEnumerable<object>> SearchAssignmentsByTrainer(string trainerId, string inputText)
         {
-            var result = await _context.Assignments.Include(a => a.Module)
-                                                    .Include(a => a.Class)
-                                                    .Include(a => a.Trainer)
-                                                    .ThenInclude(a => a.AppUser)
-                                                    .FirstOrDefaultAsync(a => a.ClassID == assignment.ClassID 
-                                                                            && a.ModuleID == assignment.ModuleID
-                                                                           );
-
-           
-            var trainer = await _context.Trainers.Include(a => a.AppUser).FirstOrDefaultAsync(t => t.TrainerID == assignment.TrainerID);
-            var @class = await _context.Classes.FirstOrDefaultAsync(t => t.ClassID == assignment.ClassID);
-            var module = await _context.Modules.FirstOrDefaultAsync(t => t.ModuleID == assignment.ClassID);
-
-            result.TrainerID = assignment.TrainerID;
-            result.Trainer = trainer;
-            result.ClassID = assignment.ClassID;
-            result.Class = @class;
-            result.ModuleID = assignment.ModuleID;
-            result.Module = assignment.Module;
-            result.RegistrationCode = assignment.RegistrationCode;
-            // result.Trainer = assignment.Trainer;
-            //await _context.SaveChangesAsync();
-            return result;
-
+            IQueryable<Assignment> query = _context.Assignments.Include(a => a.Class)
+                                                                .Include(a => a.Module)
+                                                                .Include(a => a.Trainer)
+                                                                .ThenInclude(a => a.AppUser);
+            if (!string.IsNullOrEmpty(inputText))
+            {
+                query = query.Where(a => a.TrainerID == trainerId && (a.Module.ModuleName.Contains(inputText)
+                                                                        || a.Class.ClassName.Contains(inputText)
+                                                                        || a.Trainer.AppUser.UserName.Contains(inputText)
+                                                                        || a.RegistrationCode.Contains(inputText)));
+                
+                
+            }
+            return (IEnumerable<object>)await query.Select(x => new
+                                                    {
+                                                        moduleName = x.Module.ModuleName,
+                                                        className = x.Class.ClassName,
+                                                        trainerName = x.Trainer.AppUser.UserName,
+                                                        registrationCode = x.RegistrationCode,
+                                                    })
+                                                .ToListAsync();
         }
-
-        public async Task<Assignment> DeleteAssigment(int moduleId, int classId, string trainerId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-
     }
 }
