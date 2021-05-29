@@ -37,8 +37,11 @@ namespace API.Controllers
                                                     .ThenInclude(a => a.AppUser)
                                                     .Select(x => new
                                                     {
+                                                        moduleId = x.ModuleID,
                                                         moduleName = x.Module.ModuleName,
+                                                        classId = x.ClassID,
                                                         className = x.Class.ClassName,
+                                                        trainerId = x.TrainerID,
                                                         trainerName = x.Trainer.AppUser.UserName,
                                                         registrationCode = x.RegistrationCode,
                                                     })
@@ -87,8 +90,11 @@ namespace API.Controllers
                                                     .ThenInclude(a => a.AppUser)
                                                     .Select(x => new
                                                     {
+                                                        moduleId = x.ModuleID,
                                                         moduleName = x.Module.ModuleName,
+                                                        classId = x.ClassID,
                                                         className = x.Class.ClassName,
+                                                        trainerId = x.TrainerID,
                                                         trainerName = x.Trainer.AppUser.UserName,
                                                         registrationCode = x.RegistrationCode,
                                                     })

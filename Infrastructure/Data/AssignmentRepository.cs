@@ -59,8 +59,11 @@ namespace Infrastructure.Data
             }
             return (IEnumerable<object>)await query.Select(x => new
                                                     {
+                                                        moduleId = x.ModuleID,
                                                         moduleName = x.Module.ModuleName,
+                                                        classId = x.ClassID,
                                                         className = x.Class.ClassName,
+                                                        trainerId = x.TrainerID,
                                                         trainerName = x.Trainer.AppUser.UserName,
                                                         registrationCode = x.RegistrationCode,
                                                     })
@@ -84,8 +87,11 @@ namespace Infrastructure.Data
             }
             return (IEnumerable<object>)await query.Select(x => new
                                                     {
+                                                       moduleId = x.ModuleID,
                                                         moduleName = x.Module.ModuleName,
+                                                        classId = x.ClassID,
                                                         className = x.Class.ClassName,
+                                                        trainerId = x.TrainerID,
                                                         trainerName = x.Trainer.AppUser.UserName,
                                                         registrationCode = x.RegistrationCode,
                                                     })
