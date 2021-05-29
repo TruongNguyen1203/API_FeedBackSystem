@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using API.Dtos;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -28,19 +30,7 @@ namespace API.Controllers
             {
                 moduleID=_context.Modules.Select(x=>x.ModuleID).FirstOrDefault();
             }
-            // get all answer group by value
-            // int totalAnswer=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
-            //                                 .Distinct().ToList().Count();
-            // get statistic base on value of answer
-            // group by 
-            // var baseOnClass=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
-            //                             .GroupBy(x=> x.Value)
-            //                             .Select(x=>new 
-            //                             {
-            //                                 Value=x.Key,
-            //                                 Percent=(decimal)x.Count()*100/totalAnswer
-            //                             })
-            //                             .ToList();
+
             var baseOnClass=CalStatistic(classID,moduleID);
             // var baseOnTopic=_context.
             return Ok(baseOnClass);
@@ -80,7 +70,7 @@ namespace API.Controllers
                                                     .ToList();
             return Ok( comments);
         }
-        [HttpGet("select")]
+        [HttpGet("admin")]
         public IActionResult GetSelectList()
         {
             // get all class
@@ -95,6 +85,21 @@ namespace API.Controllers
                                             ModuleName=x.ModuleName
                                         }).ToList();
             return Ok(new {classes,courses});
+        }
+        [HttpGet("trainer")]
+        public async Task<ActionResult> GetListClassModule(string trainerID)
+        {
+            var listClass=await _context.Assignments.Where(x=>x.TrainerID==trainerID)
+                                                    .Select(x=> new{
+                                                        ClassID=x.ClassID,
+                                                        ClassName=x.Class.ClassName
+                                                    }).Distinct().ToListAsync();
+            var listModule=await _context.Assignments.Where(x=>x.TrainerID==trainerID)
+                                                    .Select(x=> new{
+                                                        ModuleID=x.ModuleID,
+                                                        ModuleName=x.Module.ModuleName
+                                                    }).Distinct().ToListAsync();
+            return Ok(new{listClass,listModule});
         }
         public List<PieStatistic> CalStatistic(int? classID,int? moduleID)
         {
