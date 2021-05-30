@@ -238,5 +238,25 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("getListTrainer")]
+        public IActionResult GetListTrainer()
+        {
+            try
+            {
+                var result = _context.Trainers.Include(x => x.AppUser).Select(x => new {
+                                                                                TrainerID = x.TrainerID,
+                                                                                TrainerName = x.AppUser.UserName}).ToList();
+
+                if (result == null) return NotFound();
+
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+
     }
 }
