@@ -4,6 +4,6 @@ namespace API.Dtos
     {
         public int ClassID { get; set; }
         public int ModuleID { get; set; }
-        public string TrainerName { get; set; }
+        public string TrainerID { get; set; }
     }
 }
