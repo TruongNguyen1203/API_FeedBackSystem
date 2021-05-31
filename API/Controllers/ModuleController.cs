@@ -42,6 +42,12 @@ namespace API.Controllers
         {
             try
             {
+                // check exist name
+                var existModule=await _context.Modules.Where(x=>x.ModuleName==moduleDto.ModuleName.Trim()).FirstOrDefaultAsync();
+                if(existModule!=null)
+                {
+                    return Ok(new {success=false,message="Existed name!"});
+                }
                 var user =await _context.Admins.Include(x=>x.AppUser).Where(x=>x.AdminID==moduleDto.AdminID)
                         .SingleOrDefaultAsync();
 
@@ -131,6 +137,12 @@ namespace API.Controllers
         {
             try
             {
+                var existModule=await _context.Modules.Where(x=>x.ModuleName==moduleDto.ModuleName.Trim()).FirstOrDefaultAsync();
+                if(existModule!=null)
+                {
+                    return Ok(new {success=false,message="Existed name!"});
+                }
+
                 var user=await _context.Admins.Include(x=>x.AppUser)
                             .Where(x=>x.AdminID==moduleDto.AdminID)
                             .FirstOrDefaultAsync();

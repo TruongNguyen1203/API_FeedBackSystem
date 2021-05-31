@@ -117,6 +117,17 @@ namespace API.Controllers
                         .ToListAsync();
             return Ok(questions);
         }
-
+        [HttpGet("filter/{topicID}")]
+        public async Task<ActionResult> Filter(int topicID)
+        {
+            var results=await _context.Questions.Where(x=>x.TopicID==topicID)
+                        .Select(x=>new{
+                            TopicID=x.TopicID,
+                            TopicName=x.Topic.TopicName,
+                            QuestionID=x.QuestionID,
+                            QuestionContent=x.QuestionContent
+                        }).ToListAsync();
+            return Ok(results);
+        }
     }
 }
