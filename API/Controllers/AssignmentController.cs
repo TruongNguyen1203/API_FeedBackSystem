@@ -208,12 +208,12 @@ namespace API.Controllers
 
                 _context.Assignments.Add(newAssignment);
                 _context.SaveChanges();
-                return Ok(new { success = true, message = "Update enrollment success!" });
+                return Ok(new { success = true, message = "Update assignment success!" });
 
             }
             catch
             {
-                return Ok(new { success = false, message = "Update enrollment fail!" });
+                return Ok(new { success = false, message = "Update assignment fail!" });
             }
 
         }
