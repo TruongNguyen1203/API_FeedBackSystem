@@ -46,7 +46,11 @@ namespace API.Controllers
             {
                 result.Add(item,CalStatisticTopic(classID,moduleID,item));
             }
-            return Ok(result);
+            var temp=result.Select(x=> new{
+                        TopicName=x.Key,
+                        Value=x.Value
+            }).ToList();
+            return Ok(temp);
         }
         [HttpGet("comment")]
         // chưa test
