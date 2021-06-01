@@ -33,7 +33,7 @@ namespace Infrastructure.Data
 
             if (result != null)
             {
-                _context.Classes.Remove(result);
+                result.IsDeleted = true;
                 await _context.SaveChangesAsync();
                 return result;
             }
@@ -52,7 +52,7 @@ namespace Infrastructure.Data
 
         public async Task<IEnumerable<object>> GetClasses()
         {
-            return await _context.Classes.Select(x=> new{
+            return await _context.Classes.Where(x=> x.IsDeleted==false).Select(x=> new{
                                                 ClassID=x.ClassID,
                                                 ClassName=x.ClassName,
                                                 Capacity=x.Capacity,

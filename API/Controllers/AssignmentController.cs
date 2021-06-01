@@ -67,7 +67,7 @@ namespace API.Controllers
                     return Ok(result);
                 }
 
-                return NotFound();
+                 return Ok(new { success = false, message = "Not found!" });
             }
             catch (Exception)
             {
@@ -97,6 +97,8 @@ namespace API.Controllers
                                                         trainerId = x.TrainerID,
                                                         trainerName = x.Trainer.AppUser.UserName,
                                                         registrationCode = x.RegistrationCode,
+                                                        moduleIsDelete = x.Module.IsDelete,
+                                                        classIsDelete = x.Class.IsDeleted,
                                                     })
                                                     .ToList();
                 return Ok(data);
@@ -152,7 +154,8 @@ namespace API.Controllers
                     return Ok(result);
                 }
 
-                return NotFound();
+                 return Ok(new { success = false, message = "Not found!" });
+
             }
             catch (Exception)
             {
@@ -194,7 +197,7 @@ namespace API.Controllers
             try
             {
                 var deleted = _context.Assignments.Where(x => x.ClassID == assignmentDto.ClassID && x.ModuleID == assignmentDto.ModuleID && x.TrainerID == oldTrainerId).FirstOrDefault();
-
+                
                 _context.Assignments.Remove(deleted);
                 _context.SaveChanges();
 
