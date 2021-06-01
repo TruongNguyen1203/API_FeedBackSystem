@@ -53,17 +53,7 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult> GetQuestion(int id)
-        {
-            var question =await _context.Questions.Where(x=>x.QuestionID==id)
-                                            .Select(x=> new QuestionDto(){
-                                                QuestionID=x.QuestionID,
-                                                QuestionContent=x.QuestionContent,
-                                                TopicID=x.TopicID
-                                            }).FirstOrDefaultAsync();
-            return Ok(question);
-        }
+
         [HttpPut("{update}")]
         public async Task<ActionResult> Update(int questionID, string questionContent)
         {
@@ -103,7 +93,7 @@ namespace API.Controllers
                  return Ok(new {success=false,message="Delete fail!"});
             }
         }
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult> GetAll()
         {
             var questions=await _context.Questions
@@ -117,10 +107,10 @@ namespace API.Controllers
                         .ToListAsync();
             return Ok(questions);
         }
-        [HttpGet("filter/{topicID}")]
-        public async Task<ActionResult> Filter(int topicID)
+        [HttpGet("{topicName}")]
+        public async Task<ActionResult> Filter(string topicName)
         {
-            var results=await _context.Questions.Where(x=>x.TopicID==topicID)
+            var results=await _context.Questions.Where(x=>x.Topic.TopicName==topicName &&x.IsDeleted==false)
                         .Select(x=>new{
                             TopicID=x.TopicID,
                             TopicName=x.Topic.TopicName,

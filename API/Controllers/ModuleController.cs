@@ -30,6 +30,7 @@ namespace API.Controllers
 
             // get all feedback title
             var lstFeedbackTitle=await _context.Feedbacks
+                                .Where(x=>x.IsDelete==false)
                                 .Select(x=> new{
                                     FeedbackID=x.FeedbackID,
                                     lstFeedbackTitle=x.Title
@@ -43,7 +44,7 @@ namespace API.Controllers
             try
             {
                 // check exist name
-                var existModule=await _context.Modules.Where(x=>x.ModuleName==moduleDto.ModuleName.Trim()).FirstOrDefaultAsync();
+                var existModule=await _context.Modules.Where(x=>x.ModuleName==moduleDto.ModuleName.Trim() &&x.IsDelete==false).FirstOrDefaultAsync();
                 if(existModule!=null)
                 {
                     return Ok(new {success=false,message="Existed name!"});
@@ -77,7 +78,7 @@ namespace API.Controllers
         {
             var modules=await _context.Modules.Include(x=>x.Admin)
                         .Include(x=>x.Feedback)
-                        .Where(x=>x.IsDelete==false)
+                        .Where(x=>x.IsDelete==false &&x.Feedback.IsDelete==false)
                         .Select(x=>new {
                             ModuleID=x.ModuleID,
                             ModuleName=x.ModuleName,
@@ -103,7 +104,7 @@ namespace API.Controllers
         {
             var module =await _context.Modules.Include(x=>x.Feedback)
                         .Include(x=>x.Admin)
-                        .Where(x=>x.ModuleID==id &&x.IsDelete==false)
+                        .Where(x=>x.ModuleID==id &&x.IsDelete==false &&x.Feedback.IsDelete==false)
                         .Select(x=>new {
                             ModuleID=x.ModuleID,
                             ModuleName=x.ModuleName,
@@ -124,6 +125,7 @@ namespace API.Controllers
                         }).ToListAsync();
 
             var lstFeedbackTitle=await _context.Feedbacks
+                                .Where(x=>x.IsDelete==false)
                                 .Select(x=> new{
                                     FeedbackID=x.FeedbackID,
                                     lstFeedbackTitle=x.Title
@@ -137,7 +139,7 @@ namespace API.Controllers
         {
             try
             {
-                var existModule=await _context.Modules.Where(x=>x.ModuleName==moduleDto.ModuleName.Trim()).FirstOrDefaultAsync();
+                var existModule=await _context.Modules.Where(x=>x.ModuleName==moduleDto.ModuleName.Trim() && x.ModuleID!=moduleDto.ModuleID &&x.IsDelete==false).FirstOrDefaultAsync();
                 if(existModule!=null)
                 {
                     return Ok(new {success=false,message="Existed name!"});
@@ -148,7 +150,7 @@ namespace API.Controllers
                             .FirstOrDefaultAsync();
                 var feedback=await _context.Feedbacks.FindAsync(moduleDto.FeedbackTitleID);
 
-                var module=await _context.Modules.Where(x=>x.ModuleID==moduleDto.ModuleID &&x.IsDelete==false)
+                var module=await _context.Modules.Where(x=>x.ModuleID==moduleDto.ModuleID &&x.IsDelete==false&&x.Feedback.IsDelete==false)
                             .Select(x=>new Module(){
                                 ModuleID=x.ModuleID,
                                 ModuleName=moduleDto.ModuleName,
@@ -188,7 +190,7 @@ namespace API.Controllers
         public async Task<ActionResult> GetAllForTrainer(string trainerID)
         {
             var assignment=await _context.Assignments.Include(x=>x.Module)
-                            .Where(x=>x.TrainerID==trainerID && x.Module.IsDelete==false)
+                            .Where(x=>x.TrainerID==trainerID && x.Module.IsDelete==false &&x.Class.IsDeleted==false &&x.Module.Feedback.IsDelete==false)
                             .Select(x=> new{
                                 ModuleID=x.ModuleID,
                                 ModuleName=x.Module.ModuleName,
@@ -205,9 +207,11 @@ namespace API.Controllers
         public async Task<ActionResult> GetAllForTrainee(string traineeID)
         {
             var modules=await _context.Trainee_Assignments.Where(x=>x.TraineeID==traineeID)
-                                            .Join(_context.Assignments.Include(x=>x.Module),x=>x.RegistrationCode,y=>y.RegistrationCode, 
+                                            .Join(_context.Assignments.Include(x=>x.Module).ThenInclude(x=>x.Assignments),
+                                            x=>x.RegistrationCode,y=>y.RegistrationCode, 
                                             (x,y)=> y.Module)
-                                            .Where(y=>y.IsDelete==false)
+                                            .Where(y=>y.IsDelete==false &&y.Assignments.Select(x=>x.Class.IsDeleted).SingleOrDefault()==false &&
+                                            y.Feedback.IsDelete==false)
                                             .Select(x=>new{
                                                 ModuleID=x.ModuleID,
                                                 ModuleName=x.ModuleName,

@@ -60,7 +60,7 @@ namespace API.Controllers
             {
                 moduleID=_context.Modules.Where(x=>x.IsDelete==false).Select(x=>x.ModuleID).FirstOrDefault();
             }
-            var comments=_context.Trainee_Comments.Where(x=>x.ClassID==classID && x.ModuleID==moduleID )
+            var comments=_context.Trainee_Comments.Where(x=>x.ClassID==classID && x.ModuleID==moduleID)
                                                     .Join(_context.Trainees,x=>x.TraineeID,y=>y.TraineeID,
                                                     (x,y)=>new{
                                                         TraineeID=y.AppUser.UserName,
@@ -88,12 +88,12 @@ namespace API.Controllers
         [HttpGet("trainer")]
         public async Task<ActionResult> GetListClassModule(string trainerID)
         {
-            var listClass=await _context.Assignments.Where(x=>x.TrainerID==trainerID)
+            var listClass=await _context.Assignments.Where(x=>x.TrainerID==trainerID &&x.Class.IsDeleted==false &&x.Module.IsDelete==false)
                                                     .Select(x=> new{
                                                         ClassID=x.ClassID,
                                                         ClassName=x.Class.ClassName
                                                     }).Distinct().ToListAsync();
-            var listModule=await _context.Assignments.Where(x=>x.TrainerID==trainerID)
+            var listModule=await _context.Assignments.Where(x=>x.TrainerID==trainerID &&x.Module.IsDelete==false &&x.Class.IsDeleted==false)
                                                     .Select(x=> new{
                                                         ModuleID=x.ModuleID,
                                                         ModuleName=x.Module.ModuleName

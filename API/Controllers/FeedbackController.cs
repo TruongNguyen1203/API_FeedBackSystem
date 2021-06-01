@@ -6,7 +6,6 @@ using API.Dtos;
 using API.Extensions;
 using Core.Entities;
 using Infrastructure.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -95,7 +94,7 @@ namespace API.Controllers
 
             // prepare
             var admin =await _context.Admins.Include(x=>x.AppUser)
-                    .Where(x=>x.AdminID==HttpContext.Session.GetString(SessionKey.Id))
+                    .Where(x=>x.AdminID==feedbackDto.AdminID)
                     .FirstOrDefaultAsync();
             var typeFeedback=_context.TypeFeedbacks.Find(feedbackDto.TypeFeedbackID);
 
@@ -134,6 +133,7 @@ namespace API.Controllers
         [HttpGet("update/{id}")]
         public async Task<ActionResult> Update(int id)
         {
+            // check exist feedback title
             var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id &&x.IsDelete==false).Select(x=> new{ 
                                            FeedbackID=x.FeedbackID,
                                            FeedbackTitle=x.Title,
@@ -173,7 +173,7 @@ namespace API.Controllers
             foreach(var q in feedbackDto.lstQuestionID)
             {
                 lstQuestion.Add(await _context.Questions.Include(x=>x.Topic)
-                            .Where(x=>x.QuestionID==q)
+                            .Where(x=>x.QuestionID==q &&x.IsDeleted==false)
                             .FirstOrDefaultAsync());
             }
             // have to choose at least 1 question per topic
