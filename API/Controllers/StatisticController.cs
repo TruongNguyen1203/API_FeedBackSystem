@@ -50,7 +50,7 @@ namespace API.Controllers
                         TopicName=x.Key,
                         Value=x.Value
             }).ToList();
-            return Ok(temp);
+            return Ok(new{data=temp});
         }
         [HttpGet("comment")]
         // chưa test
