@@ -52,7 +52,7 @@ namespace API.Controllers
                             ClassListByTrainerDTO classTemp = new ClassListByTrainerDTO();
                             classTemp.ClassID = a.ClassID;
                             classTemp.ClassName = a.Class.ClassName;
-                            classTemp.NumberOfTrainee = a.Class.Enrollments.Count();
+                            classTemp.NumberOfTrainee = _context.Enrollments.Where(x => x.ClassID == a.ClassID).Count();
                             classList.Add(classTemp);
                         }
                         return Ok(classList);
@@ -69,7 +69,7 @@ namespace API.Controllers
                             ClassListByTrainee temp = new ClassListByTrainee();
                             temp.ClassID = e.ClassID;
                             temp.ClassName = e.Class.ClassName;
-                            temp.NumberOfTrainee = e.Class.Enrollments.Count();
+                            temp.NumberOfTrainee = _context.Enrollments.Where(x => x.ClassID == e.ClassID).Count();
                             classListByTrainees.Add(temp);
                         }
                         return Ok(classListByTrainees);
