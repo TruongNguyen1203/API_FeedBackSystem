@@ -104,10 +104,6 @@ namespace API.Controllers
                                                             .ThenInclude(c => c.Trainee)
                                                             .ThenInclude(c => c.AppUser)
                                                             .FirstOrDefaultAsync(c => c.ClassID == id);
-
-                        TraineeListVM trainees = new TraineeListVM();
-                        trainees.ClassId = result.ClassID;
-                        trainees.ClassName = result.ClassName;
                         List<TraineeVM> listTrainees = new List<TraineeVM>();
 
                         int count = 1;
@@ -121,8 +117,7 @@ namespace API.Controllers
                             listTrainees.Add(tempTrainee);
 
                         }
-                        trainees.TraineeList = listTrainees;
-                        return Ok(trainees);
+                        return Ok(listTrainees);
 
                     default:
                         return Unauthorized();
