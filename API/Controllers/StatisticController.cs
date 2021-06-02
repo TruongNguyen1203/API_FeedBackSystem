@@ -138,27 +138,36 @@ namespace API.Controllers
                                         .ToList();
             return baseOnClass;
         }
-        // [HttpGet("boanswer")]
-        // public async Task<ActionResult> getBaseOnAnswer(int classID, int moduleID)
-        // {
-        //     // get list question of class && module
-        //     // var questions=await _context.Questions.Where(x=>x.IsDeleted==false &&)
-        //      // get all answer group by value
-        //     int totalAnswer=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID  &&x.Question.IsDeleted==false)
-        //                                     .Distinct().ToList().Count();
-        //     // get statistic base on value of answer
-        //     // group by 
-        //     var baseOnClass=_context.Answers.Where(x=>x.ClassID==classID && x.ModuleID==moduleID  &&x.Question.IsDeleted==false)
-        //                                 // .Select(x=>x.QuestionID).Distinct()
-        //                                 .GroupBy(x=> new {x.QuestionID})
-        //                                 .Select(x=>new
-        //                                 {
-        //                                     QuestionID=x.Key.QuestionID,
-        //                                     Value=x.Key.Value,
-        //                                     Percent=(decimal)x.Count()*100/totalAnswer
-        //                                 }).Distinct()
-        //                                 .ToList();
-        //     return Ok(baseOnClass);
-        // }
+
+        [HttpGet("answer")]
+        public async Task<ActionResult> GetAnswer(int classID, int moduleID)
+        {
+            Dictionary<string,object> basequestion = new Dictionary<string, object>();
+            var topic =await _context.Topics.Select(x=>x.TopicName).ToListAsync();
+            foreach (var topicname in topic)
+            {
+                int totalAnswer = _context.Answers.Where(x=>x.ClassID== classID && x.ModuleID==moduleID &&
+                                            x.Class.IsDeleted==false &&x.Module.IsDelete==false &&x.Question.Topic.TopicName==topicname)
+                                            .Distinct().ToList().Count();
+
+                var temp= await _context.Answers.Where(x=>x.ClassID== classID && x.ModuleID==moduleID &&
+                                            x.Class.IsDeleted==false &&x.Module.IsDelete==false &&x.Question.Topic.TopicName==topicname)
+                                            .GroupBy(x=> new {x.QuestionID,x.Value})
+                                            .Select(x=>new
+                                            {
+                                                QuestionID=x.Key.QuestionID,
+                                                Value=x.Key.Value,
+                                                Percent=(decimal)x.Count()*100/totalAnswer
+                                            }).Distinct()
+                                            .ToListAsync();
+                basequestion.Add(topicname,temp);
+            }
+            var result=basequestion.Select(x=> new{
+                topicName=x.Key,
+                data=x.Value
+            }).ToList();
+
+            return Ok(result);
+        }
     }
 }
