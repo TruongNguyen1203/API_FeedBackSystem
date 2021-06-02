@@ -100,7 +100,7 @@ namespace API.Controllers
 
                     case Role.Trainer:
                     case Role.Trainee:
-                        var @class = await _context.Classes.Include(c => c.Enrollments)
+                        var @class = await _context.Classes.Where(x => x.IsDeleted == false).Include(c => c.Enrollments)
                                                             .ThenInclude(c => c.Trainee)
                                                             .ThenInclude(c => c.AppUser)
                                                             .FirstOrDefaultAsync(c => c.ClassID == id);
@@ -174,9 +174,9 @@ namespace API.Controllers
                 if (classToUpdate == null)
                     return NotFound($"Class not found");
 
-                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName).FirstOrDefault();
+                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName).Count();
                 //neu ton tai ten class do -> ko add
-                if (checkClass != null)
+                if (checkClass > 1 )
                 {
                      return Ok(new { success = false, message = "Class name is already existed!" });
                 }
