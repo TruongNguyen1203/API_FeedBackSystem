@@ -61,9 +61,13 @@ namespace API.Controllers
                                                     QuestionContent=x.QuestionContent,
                                                     TopicID=x.TopicID
                                                 }).ToListAsync());
+               
             }
-
-            return Ok(new {feedback});
+             var result= feedback.Select(x=> new{
+                    topicName=x.Key,
+                    questions=x.Value
+                }).ToList();
+            return Ok(new {result});
         }
         [HttpPost("add")]
         public async Task<ActionResult> Add([FromBody] FeedbackDto feedbackDto)
@@ -153,7 +157,11 @@ namespace API.Controllers
                                                     TopicID=x.TopicID
                                                 }).ToListAsync());
             }
-            return Ok(new {info,oldQuestion,listFeedback});
+            var result= listFeedback.Select(x=> new{
+                    topicName=x.Key,
+                    questions=x.Value
+                }).ToList();
+            return Ok(new {info,oldQuestion,result});
         }
         [HttpPut("update")]
         public async Task<ActionResult> Update([FromBody] FeedbackDto feedbackDto)
