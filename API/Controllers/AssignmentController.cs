@@ -173,6 +173,12 @@ namespace API.Controllers
             {
                 if (assignment == null)
                     return BadRequest();
+                var checkAss = _context.Assignments.Where(x => x.ClassID == assignment.ClassID && x.ModuleID == assignment.ModuleID && x.TrainerID == assignment.TrainerID).Count();
+                if(checkAss > 0)
+                {
+                    return Ok(new { success = false, message = "Assignment already exist!" });
+
+                }
 
                 var Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
                 assignment.RegistrationCode = "CL" + assignment.ClassID + "M" + assignment.ModuleID + "T" + Timestamp;
@@ -197,11 +203,9 @@ namespace API.Controllers
             try
             {
                 var deleted = _context.Assignments.Where(x => x.ClassID == assignmentDto.ClassID && x.ModuleID == assignmentDto.ModuleID && x.TrainerID == oldTrainerId).FirstOrDefault();
-                
+    
                 _context.Assignments.Remove(deleted);
                 _context.SaveChanges();
-
-          
 
                 Assignment newAssignment = new Assignment();
                 newAssignment.ClassID = assignmentDto.ClassID;
