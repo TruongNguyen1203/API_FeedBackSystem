@@ -24,11 +24,23 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAll()
         {
-            var feedbacks=await _context.Feedbacks.Where(X=>X.IsDelete==false).Select(x=> new {
+            var feedbacks=await _context.Feedbacks.Where(X=>X.IsDelete==false).Select(x=> new FeedbackDtoList(){
                 FeedbackID=x.FeedbackID,
                 Title=x.Title,
-                AdminID=x.AdminID
+                AdminID=x.AdminID,
+                noModule=0
             }).ToListAsync();
+            foreach (var item in feedbacks)
+            {
+                var module=await _context.Modules.Where(x=>x.FeedbackID==item.FeedbackID).ToListAsync();
+                foreach (var m in module)
+                {
+                    if(m.FeedbackStartTime<=DateTime.Now && m.FeedbackEndTime>= DateTime.Now)
+                    {
+                        item.noModule+=1;
+                    }
+                }   
+            }
             return Ok(feedbacks);
         }
         [HttpGet("{id}")]
@@ -36,7 +48,7 @@ namespace API.Controllers
         {
             var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id &&x.IsDelete==false).Select(x=> new{ 
                                            FeedbackTitle=x.Title,
-                                           AdminID=x.AdminID             
+                                           AdminID=x.AdminID          
                                         }).FirstOrDefaultAsync();
             Dictionary<string,List<string>> feedback = new Dictionary<string, List<string>>();
             var allTopic= await _context.Topics.Select(x=>x.TopicName).ToListAsync();
@@ -145,7 +157,8 @@ namespace API.Controllers
             var info= await _context.Feedbacks.Where(x=>x.FeedbackID==id &&x.IsDelete==false).Select(x=> new{ 
                                            FeedbackID=x.FeedbackID,
                                            FeedbackTitle=x.Title,
-                                           AdminID=x.AdminID             
+                                           AdminID=x.AdminID,
+                                           TypeFeedbackName=x.TypeFeedback.TypeName             
                                         }).FirstOrDefaultAsync();
             var allTopic= await _context.Topics.Select(x=>x.TopicName).ToListAsync();
             // return list question id of feedback
