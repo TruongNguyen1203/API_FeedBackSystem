@@ -46,7 +46,11 @@ namespace API.Controllers
                                                 && x.Feedback.IsDelete==false && x.Question.IsDeleted==false)
                                                 .Select(x=>x.Question.QuestionContent).ToListAsync());
             }
-            return Ok(new{feedbackTitle=info.FeedbackTitle,adminID=info.AdminID,content=feedback});
+            var finalFeedback = feedback.Select(x=> new{
+                TopicName=x.Key,
+                Questions=x.Value
+            }).ToList();
+            return Ok(new{feedbackTitle=info.FeedbackTitle,adminID=info.AdminID,content=finalFeedback});
         }
         [HttpGet("add")]
         public async Task<ActionResult> Add()
