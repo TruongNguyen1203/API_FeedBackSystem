@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Dtos;
@@ -84,11 +85,12 @@ namespace API.Controllers
                             ModuleName=x.ModuleName,
                             AdminID=x.AdminID,
                             AdminName=x.Admin.AppUser.UserName,
-                            StartDate=x.StartTime.ToString("MM/dd/yyyy"),
-                            EndDate=x.EndTime.ToString("MM/dd/yyyy"),
+                            StartDate=x.StartTime.ToString("dd/MM/yyyy"),
+                            EndDate=x.EndTime.ToString("dd/MM/yyyy"),
                             FeedbackTitleID=x.Feedback.FeedbackID,
-                            FeedbackStartTime=x.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
-                            FeedbackEndTime=x.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
+                            FeedbackStartTime=x.FeedbackStartTime.ToString("dd/MM/yyyy HH:mm"),
+                            FeedbackEndTime=x.FeedbackEndTime.ToString("dd/MM/yyyy HH:mm"),
+                            isWarning=x.StartTime<DateTime.Now?false:true
                         })
                         .ToListAsync();
             return Ok(modules);
@@ -110,11 +112,11 @@ namespace API.Controllers
                             ModuleName=x.ModuleName,
                             AdminID=x.AdminID,
                             AdminName=x.Admin.AppUser.UserName,
-                            StartDate=x.StartTime.ToString("MM/dd/yyyy"),
-                            EndDate=x.EndTime.ToString("MM/dd/yyyy"),
+                            StartDate=x.StartTime.ToString("dd/MM/yyyy"),
+                            EndDate=x.EndTime.ToString("dd/MM/yyyy"),
                             FeedbackTitleID=x.Feedback.FeedbackID,
-                            FeedbackStartTime=x.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
-                            FeedbackEndTime=x.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
+                            FeedbackStartTime=x.FeedbackStartTime.ToString("dd/MM/yyyy HH:mm"),
+                            FeedbackEndTime=x.FeedbackEndTime.ToString("dd/MM/yyyy HH:mm")
                         })
                         .FirstOrDefaultAsync();
 
@@ -195,11 +197,11 @@ namespace API.Controllers
                                 ModuleID=x.ModuleID,
                                 ModuleName=x.Module.ModuleName,
                                 AdminID=x.Module.AdminID,
-                                StartDate=x.Module.StartTime.ToString("MM/dd/yyyy"),
-                                EndDate=x.Module.EndTime.ToString("MM/dd/yyyy"),
+                                StartDate=x.Module.StartTime.ToString("dd/MM/yyyy"),
+                                EndDate=x.Module.EndTime.ToString("dd/MM/yyyy"),
                                 FeedbackTitle=x.Module.Feedback.Title,
-                                FeedbackStartTime=x.Module.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
-                                FeedbackEndTime=x.Module.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
+                                FeedbackStartTime=x.Module.FeedbackStartTime.ToString("dd/MM/yyyy HH:mm"),
+                                FeedbackEndTime=x.Module.FeedbackEndTime.ToString("dd/MM/yyyy HH:mm")
                             }).ToListAsync();
             return Ok(assignment);
         }
@@ -217,13 +219,14 @@ namespace API.Controllers
                                                 ModuleName=x.ModuleName,
                                                 AdminID=x.AdminID,
                                                 AdminUserName=x.Admin.AppUser.UserName,
-                                                StartDate=x.StartTime.ToString("MM/dd/yyyy"),
-                                                EndDate=x.EndTime.ToString("MM/dd/yyyy"),
+                                                StartDate=x.StartTime.ToString("dd/MM/yyyy"),
+                                                EndDate=x.EndTime.ToString("dd/MM/yyyy"),
                                                 FeedbackTitle=x.Feedback.Title,
-                                                FeedbackStartTime=x.FeedbackStartTime.ToString("MM/dd/yyyy HH:mm"),
-                                                FeedbackEndTime=x.FeedbackEndTime.ToString("MM/dd/yyyy HH:mm")
+                                                FeedbackStartTime=x.FeedbackStartTime.ToString("dd/MM/yyyy HH:mm"),
+                                                FeedbackEndTime=x.FeedbackEndTime.ToString("dd/MM/yyyy HH:mm")
                                             }).ToListAsync();
             return Ok(modules);                                                    
         }
     }
+    
 }   

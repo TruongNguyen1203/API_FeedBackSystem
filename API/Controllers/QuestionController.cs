@@ -102,7 +102,8 @@ namespace API.Controllers
                             TopicID=x.TopicID,
                             TopicName=x.Topic.TopicName,
                             QuestionID=x.QuestionID,
-                            QuestionContent=x.QuestionContent
+                            QuestionContent=x.QuestionContent,
+                            isWarning=x.Feedback_Questions.Select(x=>x.FeedbackID).ToList().Count==0?false:true
                         })
                         .ToListAsync();
             return Ok(questions);

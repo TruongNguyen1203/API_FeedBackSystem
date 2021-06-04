@@ -47,7 +47,7 @@ namespace API.Controllers
         {
             try
             {
-                var result = _context.Enrollments.Where(x => x.ClassID == classId && x.TraineeID == traineeId)
+                var result =  _context.Enrollments.Where(x => x.ClassID == classId && x.TraineeID == traineeId)
                                                     .Select(x => new DetailEnrollmentDto(){
                                                             TraineeID = x.TraineeID,
                                                             Phone = x.Trainee.AppUser.PhoneNumber,

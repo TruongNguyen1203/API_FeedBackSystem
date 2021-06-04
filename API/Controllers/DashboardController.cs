@@ -32,7 +32,7 @@ namespace API.Controllers
                                                 Feedback=y.Module.Feedback,
                                                 Class=y.Class
                                             })
-                                            .Where(y=>y.Module.IsDelete==false)
+                                            .Where(y=>y.Module.IsDelete==false && y.Module.FeedbackStartTime<=DateTime.Now &&y.Module.FeedbackEndTime>=DateTime.Now)
                                             .Select(x=>new{
                                                 FeedbackID=x.Feedback.FeedbackID,
                                                 FeedbackTitle=x.Feedback.Title,
@@ -40,7 +40,7 @@ namespace API.Controllers
                                                 ClassName=x.Class.ClassName,
                                                 ModuleID=x.Module.ModuleID,
                                                 ModuleName=x.Module.ModuleName,
-                                                EndTime=x.Module.EndTime.ToString("MM/dd/yyyy HH:mm"),
+                                                EndTime=x.Module.FeedbackEndTime.ToString("dd/MM/yyyy HH:mm"),
                                                 StatusCode="InComplete"
                                             }).ToListAsync();
              // ====> get feedback which was not completed
