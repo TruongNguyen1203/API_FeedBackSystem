@@ -79,6 +79,7 @@ namespace Infrastructure.Data
             {
                 result.ClassName = @class.ClassName;
                 result.Capacity = @class.Capacity;
+                result.StartTime = @class.StartTime;
                 result.EndTime = @class.EndTime;
 
                 await _context.SaveChangesAsync();
