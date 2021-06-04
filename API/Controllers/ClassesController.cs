@@ -140,7 +140,7 @@ namespace API.Controllers
                 if (@class == null)
                     return Ok(new { success = false, message = "Add class false!" });
 
-                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName).FirstOrDefault();
+                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName && x.IsDeleted == false).FirstOrDefault();
                 //neu ton tai ten class do -> ko add
                 if (checkClass != null)
                 {
@@ -169,7 +169,7 @@ namespace API.Controllers
                 if (classToUpdate == null)
                     return NotFound($"Class not found");
 
-                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName).Count();
+                var checkClass = _context.Classes.Where(x => x.ClassName == @class.ClassName && x.IsDeleted==false).Count();
                 //neu ton tai ten class do -> ko add
                 if (checkClass > 1 )
                 {

@@ -234,7 +234,9 @@ namespace API.Controllers
          
                 var assignment = _context.Assignments.Where(x => x.ClassID == ClassId && x.ModuleID == ModuleId && x.TrainerID == TrainerId).FirstOrDefault();
 
+                var trainee_ass = _context.Trainee_Assignments.Where(x => x.RegistrationCode == assignment.RegistrationCode).ToList();
                 _context.Assignments.Remove(assignment);
+                _context.Trainee_Assignments.RemoveRange(trainee_ass);
 
                 _context.SaveChanges();
                 return Ok(new { success = true, message = "Delete Success!" });

@@ -31,9 +31,12 @@ namespace Infrastructure.Data
              var result = await _context.Classes
                 .FirstOrDefaultAsync(c => c.ClassID == Id);
 
+            var enroll = await _context.Enrollments.Where(e => e.ClassID == Id).ToListAsync();
+
             if (result != null)
             {
                 result.IsDeleted = true;
+                _context.Enrollments.RemoveRange(enroll);
                 await _context.SaveChangesAsync();
                 return result;
             }
