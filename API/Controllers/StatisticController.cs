@@ -102,7 +102,7 @@ namespace API.Controllers
                                                         ModuleID=x.ModuleID,
                                                         ModuleName=x.Module.ModuleName
                                                     }).Distinct().ToListAsync();
-            return Ok(new{listClass,listModule});
+            return Ok(new{classes=listClass,courses=listModule});
         }
         public List<PieStatistic> CalStatistic(int? classID,int? moduleID)
         {
